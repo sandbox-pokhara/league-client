@@ -3,3 +3,10 @@ def get_summoner_by_name(connection, name):
     if not res.ok:
         return {'ok': False, 'status_code': res.status_code, 'detail': res.json()}
     return {'ok': True, 'data': res.json()}
+
+
+def get_current_summoner(connection):
+    res = connection.get('/lol-summoner/v1/current-summoner')
+    if not res.ok:
+        return None
+    return res.json()
