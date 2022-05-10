@@ -4,6 +4,8 @@ import time
 
 import requests
 
+from league_process.utils import is_running
+
 from .logger import logger
 
 
@@ -97,7 +99,6 @@ def authorize(connection, username, password):
 
 
 def launch_league(connection):
-    logger.info('Launching league...')
     connection.post('/product-launcher/v1/products/league_of_legends/patchlines/live')
 
 
@@ -117,7 +118,8 @@ def login(connection, username, password, timeout=180, patch_timeout=7200):
             return {'ok': False, 'detail': 'Timeout.'}
 
         phase = get_product_context_phase(connection)
-        logger.info(f'Riot client phase: {phase}')
+        if phase is not None:
+            logger.info(f'Riot client phase: {phase}')
 
         # Bad phases
         if phase == 'Unknown':
@@ -133,15 +135,25 @@ def login(connection, username, password, timeout=180, patch_timeout=7200):
 
         # Good phases
         if phase in phases['success']:
-            return {'ok': True}
+            if is_running('LeagueClient.exe'):
+                return {'ok': True}
+            launch_league(connection)
+            time.sleep(2)
+            continue
         if phase in phases['wait_for_launch']:
-            return {'ok': True}
+            launch_league(connection)
+            time.sleep(2)
+            continue
         if phase is None or phase in phases['login']:
             res = authorize(connection, username, password)
             if not res['ok']:
                 return res
             if res['ok'] and res['logged_in']:
-                return {'ok': True}
+                if is_running('LeagueClient.exe'):
+                    return {'ok': True}
+                launch_league(connection)
+                time.sleep(2)
+                continue
             if res['ok'] and not res['logged_in']:
                 time.sleep(2)
                 continue
@@ -152,5 +164,6 @@ def login(connection, username, password, timeout=180, patch_timeout=7200):
         if phase in phases['patch_status']:
             if not wait_until_patched(connection, timeout=patch_timeout):
                 return {'ok': False, 'detail': 'Patch timeout.'}
+            time.sleep(2)
             continue
         time.sleep(2)

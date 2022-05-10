@@ -8,34 +8,31 @@ league-client is a python package to communicate with riot client and league cli
 pip install league-client
 ```
 
-## Examples
+## Example
 
-### Logging in (Riot Client)
+### Define paths
 
 ```
-from league_connection import LeagueConnection
+>>> riot_exe = 'C:\\Riot Games\\Riot Client\\RiotClientServices.exe'
+>>> riot_lockfile = 'C:\\Users\\sandbox\\AppData\\Local\\Riot Games\\Riot Client\\Config\\lockfile'
+>>> league_lockfile = 'C:\\Riot Games\\League of Legends\\lockfile'
+```
 
-from league_client.login import login
-from league_process.process import open_league_client
-from league_process.process import open_riot_client
+### Log in
 
-DEFAULT_RIOT_EXE = 'C:\\Riot Games\\Riot Client\\RiotClientServices.exe'
-DEFAULT_RIOT_LOCKFILE = 'C:\\Users\\sandbox\\AppData\\Local\\Riot Games\\Riot Client\\Config\\lockfile'
-DEFAULT_LEAGUE_EXE = 'C:\\Riot Games\\League of Legends\\LeagueClient.exe'
-DEFAULT_LEAGUE_LOCKFILE = 'C:\\Riot Games\\League of Legends\\lockfile'
-
-
-def main():
-    '''Main function'''
-    open_riot_client(DEFAULT_RIOT_EXE)
-    riot_connection = LeagueConnection(DEFAULT_RIOT_LOCKFILE)
-    res = login(riot_connection, 'your_username', 'your_password')
-    if not res['ok']:
-        print(res)
-        return
-    open_league_client(DEFAULT_LEAGUE_EXE)
-
-
-if __name__ == '__main__':
-    main()
+```
+>>> from league_client.shortcuts import login
+>>> login(
+...         'username',
+...         'password',
+...         riot_exe,
+...         riot_lockfile,
+...         league_lockfile,
+...     )
+05/10/2022 12:18:09 PM - INFO - Logging in...
+05/10/2022 12:18:18 PM - INFO - Waiting for session...
+05/10/2022 12:18:22 PM - INFO - Session state: IN_PROGRESS
+05/10/2022 12:18:28 PM - INFO - Session state: SUCCEEDED
+05/10/2022 12:18:28 PM - INFO - Checking username...
+{'ok': True}
 ```

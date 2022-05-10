@@ -2,7 +2,7 @@ import logging
 import sys
 from logging import StreamHandler
 
-logger = logging.Logger('client')
+logger = logging.Logger('league_client')
 formatter = logging.Formatter(
     '%(asctime)s - %(levelname)s - %(message)s',
     '%m/%d/%Y %I:%M:%S %p',
