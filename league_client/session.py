@@ -42,6 +42,7 @@ def wait_session(connection, timeout=60, in_progress_timeout=180):
             if state == 'ERROR':
                 if res['error']['messageId'] == 'ACCOUNT_BANNED':
                     return {'ok': False, 'detail': 'Account banned.'}
+                return {'ok': False, 'detail': res['error']['messageId']}
             time.sleep(1)
         except requests.exceptions.RequestException:
             time.sleep(1)
