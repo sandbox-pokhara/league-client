@@ -1,8 +1,13 @@
+import os
 import time
 
 import requests
+from league_connection import LeagueConnection
+
+from league_process.utils import is_running
 
 from .logger import logger
+from .login import launch_league
 
 
 def wait_session_in_progress(connection, timeout=180):
@@ -18,14 +23,20 @@ def wait_session_in_progress(connection, timeout=180):
         time.sleep(1)
 
 
-def wait_session(connection, timeout=60, in_progress_timeout=180):
+def wait_session(riot_lockfile, league_lockfile, timeout=60, in_progress_timeout=180):
     start = time.time()
     logger.info('Waiting for session...')
     while True:
         try:
             if time.time() - start > timeout:
                 return {'ok': False, 'detail': 'Timeout.'}
-            res = connection.get('/lol-login/v1/session')
+            riot_connection = LeagueConnection(riot_lockfile)
+            if not is_running('LeagueClient.exe') or not os.path.isfile(league_lockfile):
+                launch_league(riot_connection)
+                time.sleep(1)
+                continue
+            league_connection = LeagueConnection(league_lockfile)
+            res = league_connection.get('/lol-login/v1/session')
             if res.status_code == 404:
                 time.sleep(1)
                 continue
@@ -35,7 +46,7 @@ def wait_session(connection, timeout=60, in_progress_timeout=180):
             if state == 'SUCCEEDED':
                 return {'ok': True}
             if state == 'IN_PROGRESS':
-                if not wait_session_in_progress(connection, timeout=in_progress_timeout):
+                if not wait_session_in_progress(league_connection, timeout=in_progress_timeout):
                     return {'ok': False, 'detail': 'In progress timeout.'}
             if res.get('isNewPlayer', False):
                 return {'ok': False, 'detail': 'New player.'}

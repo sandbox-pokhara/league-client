@@ -21,13 +21,15 @@ def login(username,
         res = base_login(riot_connection, username, password)
         if not res['ok']:
             return res
-        league_connection = LeagueConnection(league_lockfile)
-        res = wait_session(league_connection)
+        res = wait_session(riot_lockfile, league_lockfile)
         if not res['ok']:
             return res
+        league_connection = LeagueConnection(league_lockfile)
         res = check_username(league_connection, username)
         if not res['ok']:
-            logger.info('Changing account...')
-            logout(league_lockfile)
-            continue
+            if res['detail'] == 'Wrong username.':
+                logger.info('Changing account...')
+                logout(league_lockfile)
+                continue
+            return res
         return {'ok': True}
