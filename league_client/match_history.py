@@ -1,7 +1,3 @@
-''' Module for gameflow related tasks '''
-import requests
-
-
 def get_match_history(connection, puuid):
     res = connection.get(f'/lol-match-history/v1/products/lol/{puuid}/matches')
     if not res.ok:
