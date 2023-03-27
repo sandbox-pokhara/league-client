@@ -15,4 +15,4 @@ from . import token
 from . import username
 from . import wallet
 
-__version__ = "1.0.6"
+__version__ = '1.0.7'
