@@ -46,12 +46,14 @@ def open_chest_by_loot_id(connection, loot_id, requires_key=True,  repeat=1):
 
 def open_chest_loots(connection, loots, requires_key=True):
     for loot in loots:
-        key_count = get_key_count(connection)
-        if key_count == 0 or loots == []:
-            return
-        if min(key_count, len(loots)) > 0:
-            open_chest_by_loot_id(connection, loot['lootId'],
-                                  requires_key=requires_key, repeat=loot['count'])
+        count = loot['count']
+        if requires_key:
+            key_count = get_key_count(connection)
+            if key_count == 0:
+                return
+            count = min(count, key_count)
+        open_chest_by_loot_id(connection, loot['lootId'],
+                              requires_key=requires_key, repeat=count)
         time.sleep(1)
 
 
@@ -95,50 +97,32 @@ def forge_keys_and_open_masterwork_chests(connection, retry_limit=10):
             open_masterwork_chests(connection)
 
 
-def forge_keys_and_open_orbs(connection, retry_limit=10):
+def open_orbs(connection, retry_limit=10):
     for _ in range(retry_limit):
         loot = get_loot(connection)
         if loot == []:
             time.sleep(1)
             continue
-
-        forgable_keys = int(get_key_fragment_count(connection) / 3)
-        if forgable_keys > 0:
-            forge_key_from_key_fragments(connection, forgable_keys)
-            continue
-
         orbs = [l for l in loot if 'orb' in l['localizedName'].lower()]
         open_chest_loots(connection, orbs, requires_key=False)
 
 
-def forge_keys_and_open_bags(connection, retry_limit=10):
+def open_bags(connection, retry_limit=10):
     for _ in range(retry_limit):
         loot = get_loot(connection)
         if loot == []:
             time.sleep(1)
             continue
-
-        forgable_keys = int(get_key_fragment_count(connection) / 3)
-        if forgable_keys > 0:
-            forge_key_from_key_fragments(connection, forgable_keys)
-            continue
-
         bags = [l for l in loot if 'bag' in l['localizedName'].lower()]
         open_chest_loots(connection, bags, requires_key=False)
 
 
-def forge_keys_and_open_eternals_capsules(connection, retry_limit=10):
+def open_eternals_capsules(connection, retry_limit=10):
     for _ in range(retry_limit):
         loot = get_loot(connection)
         if loot == []:
             time.sleep(1)
             continue
-
-        forgable_keys = int(get_key_fragment_count(connection) / 3)
-        if forgable_keys > 0:
-            forge_key_from_key_fragments(connection, forgable_keys)
-            continue
-
         eternals_capsules = [l for l in loot
                              if 'eternals' in l['localizedName'].lower()
                              and 'capsule' in l['localizedName'].lower()]
