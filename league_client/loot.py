@@ -73,6 +73,8 @@ def get_orange_essence(connection):
         if not res.ok:
             return None
         res = res.json()
+        if 'CURRENCY_cosmetic' not in res:
+            return 0
         return res['CURRENCY_cosmetic']['count']
     except (json.decoder.JSONDecodeError, requests.RequestException, KeyError):
         return None
