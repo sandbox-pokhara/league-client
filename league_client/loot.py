@@ -21,12 +21,12 @@ def get_player_loot_map(connection):
     return res.json()
 
 
-def get_loot_count(connection, lood_id):
+def get_loot_count(connection, loot_id):
     loot = get_loot(connection)
-    key_fragment = [l for l in loot if l['lootId'] == lood_id]
-    if key_fragment == []:
+    filtered_loot = [l for l in loot if l['lootId'] == loot_id]
+    if filtered_loot == []:
         return 0
-    return key_fragment[0]['count']
+    return filtered_loot[0]['count']
 
 
 def get_loot_by_id(connection, loot_id):
