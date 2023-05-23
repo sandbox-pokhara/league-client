@@ -4,20 +4,7 @@ from .logger import logger
 from .rso import HEADERS
 from .rso import ClientSession
 from .rso import get_basic_auth
-
-
-async def parse_auth_code(session, data, proxy, proxy_auth):
-    async with session.post(
-        'https://auth.riotgames.com/api/v1/authorization',
-        proxy=proxy,
-        proxy_auth=proxy_auth,
-        json=data,
-        headers=HEADERS,
-    ) as res:
-        if not res.ok:
-            logger.debug(res.status)
-            return
-        return res.ok
+from .rso_auth import parsing_auth_code
 
 
 async def parse_userinfo(session, headers, proxy, proxy_auth):
@@ -93,7 +80,7 @@ async def get_userinfo(
                 'scope': 'openid ban',
                 'response_type': 'token id_token',
             }
-            if not await parse_auth_code(session, data, proxy, proxy_auth):
+            if not await parsing_auth_code(session, data, proxy, proxy_user, proxy_pass):
                 logger.info('Failed.')
                 return {'error': 'Failed to parse authorization code'}, 1
             logger.info('Success.')
