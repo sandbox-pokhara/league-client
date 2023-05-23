@@ -2,7 +2,20 @@ from .logger import logger
 from .rso import ClientSession
 from .rso import get_basic_auth
 from .rso_auth import parsing_auth_code
-from .utils import parse_access_token, parse_userinfo
+from .utils import parse_access_token
+
+async def parse_userinfo(session, headers, proxy, proxy_auth):
+    async with session.post(
+        'https://auth.riotgames.com/userinfo',
+        proxy=proxy,
+        proxy_auth=proxy_auth,
+        json={},
+        headers=headers,
+    ) as res:
+        if not res.ok:
+            logger.debug(res.status)
+            return {'error': 'Failed to parse userinfo'}, 1
+        return await res.json(), None
 
 async def get_userinfo(
     username, password, proxy=None, proxy_user=None, proxy_pass=None

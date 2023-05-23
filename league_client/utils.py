@@ -12,19 +12,6 @@ def _extract_tokens(data: str) -> str:
     response = pattern.findall(data['response']['parameters']['uri'])[0]
     return response
 
-async def parse_userinfo(session, headers, proxy, proxy_auth):
-    async with session.post(
-        'https://auth.riotgames.com/userinfo',
-        proxy=proxy,
-        proxy_auth=proxy_auth,
-        json={},
-        headers=headers,
-    ) as res:
-        if not res.ok:
-            logger.debug(res.status)
-            return {'error': 'Failed to parse userinfo'}, 1
-        return await res.json(), None
-
 async def parse_access_token(session, data, proxy, proxy_auth):
     async with session.put(
         'https://auth.riotgames.com/api/v1/authorization',
