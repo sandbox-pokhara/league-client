@@ -39,19 +39,9 @@ async def parse_access_token(session, data, proxy, proxy_auth):
         data = await res.json()
         response_type = data['type']
         if response_type == 'response':
-            logger.info('Parsing userinfo...')
             response = _extract_tokens(data)
             access_token = response[0]
-            headers = {
-                'Content-Type': 'application/json',
-                'Authorization': f'Bearer {access_token}',
-            }
-            data, error = await parse_userinfo(session, headers, proxy, proxy_auth)
-            if error:
-                logger.info('Failed.')
-                return data, 1
-            logger.info('Success.')
-            return data, None
+            return {'access_token': access_token}, None
         elif response_type == 'multifactor':
             return {'error': 'Multifactor authentication'}, 1
         elif response_type == 'auth' and data['error'] == 'auth_failure':
