@@ -2,7 +2,7 @@ from .logger import logger
 from .rso import ClientSession
 from .rso import get_basic_auth
 from .rso_auth import parsing_auth_code
-from .utils import parse_access_token
+from .utils import parse_access_token, parse_userinfo
 
 async def get_userinfo(
     username, password, proxy=None, proxy_user=None, proxy_pass=None
@@ -34,7 +34,20 @@ async def get_userinfo(
             if error:
                 logger.info('Failed.')
                 return data, 1
+            access_token = data['access_token']
             logger.info('Success.')
+            
+            logger.info('Parsing userinfo...')
+            headers = {
+                'Content-Type': 'application/json',
+                'Authorization': f'Bearer {access_token}',
+            }
+            data, error = await parse_userinfo(session, headers, proxy, proxy_auth)
+            if error:
+                logger.info('Failed.')
+                return data, 1
+            logger.info('Success.')
+            
             return data, None
     except Exception as exp:
         logger.error(f'Got exception type: {exp.__class__.__name__}')
