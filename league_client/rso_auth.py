@@ -11,7 +11,7 @@ async def parsing_auth_code(session, params, proxy, proxy_user=None, proxy_pass=
                            headers=HEADERS) as res:
         if not res.ok:
             logger.debug(res.status)
-            return
+            return False
         return res.ok
 
 
