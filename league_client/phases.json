@@ -7,5 +7,6 @@
   "banned": [],
   "account_alias_change": ["AccountAlias"],
   "region_missing": ["HomeBaseCountry"],
-  "patch_status": ["PatchStatus", "WaitingForPatchStatus"]
+  "patch_status": ["PatchStatus", "WaitingForPatchStatus"],
+  "vng_account_required": ["VngAccountRequired"]
 }

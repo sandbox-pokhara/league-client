@@ -118,8 +118,7 @@ def login(connection, username, password, timeout=180, patch_timeout=7200):
             return {'ok': False, 'detail': 'Timeout.'}
 
         phase = get_product_context_phase(connection)
-        if phase is not None:
-            logger.info(f'Riot client phase: {phase}')
+        logger.info(f'Riot client phase: {phase}')
 
         # Bad phases
         if phase == 'Unknown':
@@ -132,6 +131,8 @@ def login(connection, username, password, timeout=180, patch_timeout=7200):
             return {'ok': False, 'detail': 'Consent required.'}
         if phase in phases['account_alias_change']:
             return {'ok': False, 'detail': 'Name change required.'}
+        if phase in phases['vng_account_required']:
+            return {'ok': False, 'detail': 'Vng account required.'}
 
         # Good phases
         if phase in phases['success']:
