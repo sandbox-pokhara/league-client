@@ -8,6 +8,10 @@ league-client is a python package to communicate with riot client and league cli
 pip install league-client
 ```
 
+## Known Limitations
+
+- RSO does not work in python3.6
+
 ## Example
 
 ### Define paths
