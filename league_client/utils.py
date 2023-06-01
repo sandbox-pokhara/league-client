@@ -12,7 +12,6 @@ def _extract_tokens(data: str) -> str:
     response = pattern.findall(data['response']['parameters']['uri'])[0]
     return response
 
-
 async def parse_access_token(session, data, proxy, proxy_auth):
     async with session.put(
         'https://auth.riotgames.com/api/v1/authorization',
