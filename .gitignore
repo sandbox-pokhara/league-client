@@ -153,3 +153,5 @@ cython_debug/
 
 temp
 sandbox.py
+logs/
+.vscode/

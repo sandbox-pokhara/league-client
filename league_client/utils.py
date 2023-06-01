@@ -36,3 +36,16 @@ async def parse_access_token(session, data, proxy, proxy_auth):
         elif response_type == 'auth' and data['error'] == 'rate_limited':
             return {'error': 'Rate limited'}, 1
         return {'error': 'Got response type: {response_type}'}, 1
+    
+async def parse_blue_essence(session, region, headers, proxy, proxy_auth):
+    async with session.get(
+        f'https://{region}.store.leagueoflegends.com/storefront/v2/wallet?language=en_GB/',
+        proxy=proxy,
+        proxy_auth=proxy_auth,
+        json={},
+        headers=headers,
+    ) as res:
+        if not res.ok:
+            logger.debug(res.status)
+            return {'error': 'Failed to parse blue essence'}, 1
+        return await res.json(), None

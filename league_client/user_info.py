@@ -3,6 +3,7 @@ from .rso import ClientSession
 from .rso import get_basic_auth
 from .rso_auth import parsing_auth_code
 from .utils import parse_access_token
+from .utils import parse_blue_essence
 
 async def parse_userinfo(session, headers, proxy, proxy_auth):
     async with session.post(
@@ -61,6 +62,19 @@ async def get_userinfo(
                 return data, 1
             logger.info('Success.')
             
+            # parsing blue essence (optional)
+            logger.info('Parsing blue essence...')
+            try:
+                region = data['region']['tag']
+                be_data, error = await parse_blue_essence(session, region, headers, proxy, proxy_auth)
+                if error:
+                    logger.info('Failed.')
+                else:
+                    data['blue_essence'] = be_data['ip']
+                    logger.info('Success.')
+            except:
+                logger.info('Failed.')
+
             return data, None
     except Exception as exp:
         logger.error(f'Got exception type: {exp.__class__.__name__}')
