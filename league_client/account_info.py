@@ -1,14 +1,14 @@
 import aiohttp
 
 from league_client.rso import get_basic_auth
-from league_client.utils import get_honor_level
-from league_client.utils import get_loot
-from league_client.utils import get_owned_skins
-from league_client.utils import get_rank_info
-from league_client.utils import get_tokens
-from league_client.utils import parse_info_from_access_token
-from league_client.utils import parse_ledge_token
-from league_client.utils import parse_userinfo
+from league_client.rso_ledge import get_honor_level
+from league_client.rso_ledge import get_loot
+from league_client.rso_ledge import get_owned_skins
+from league_client.rso_ledge import get_rank_info
+from league_client.rso_ledge import parse_ledge_token
+from league_client.rso_tokens import get_tokens
+from league_client.rso_tokens import parse_info_from_access_token
+from league_client.rso_userinfo import parse_userinfo
 
 
 async def get_account_info(
