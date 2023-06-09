@@ -5,6 +5,8 @@ from .rso_auth import parsing_auth_code
 from .utils import parse_access_token
 from .utils import parse_blue_essence
 
+
+# ! deprecated_in='1.0.16', Use utils.parse_userinfo instead
 async def parse_userinfo(session, headers, proxy, proxy_auth):
     async with session.post(
         'https://auth.riotgames.com/userinfo',
@@ -18,6 +20,8 @@ async def parse_userinfo(session, headers, proxy, proxy_auth):
             return {'error': 'Failed to parse userinfo'}, 1
         return await res.json(), None
 
+
+# ! deprecated_in='1.0.16', Use account_info.get_account_info instead
 async def get_userinfo(
     username, password, proxy=None, proxy_user=None, proxy_pass=None
 ):
@@ -50,7 +54,7 @@ async def get_userinfo(
                 return data, 1
             access_token = data['access_token']
             logger.info('Success.')
-            
+
             logger.info('Parsing userinfo...')
             headers = {
                 'Content-Type': 'application/json',
@@ -61,7 +65,7 @@ async def get_userinfo(
                 logger.info('Failed.')
                 return data, 1
             logger.info('Success.')
-            
+
             # parsing blue essence (optional)
             logger.info('Parsing blue essence...')
             try:
@@ -72,7 +76,7 @@ async def get_userinfo(
                 else:
                     data['blue_essence'] = be_data['ip']
                     logger.info('Success.')
-            except:
+            except Exception:
                 logger.info('Failed.')
 
             return data, None
