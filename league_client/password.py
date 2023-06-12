@@ -55,6 +55,8 @@ async def post_change_password(session,
     }
     headers = copy(HEADERS)
     headers['csrf-token'] = csrf_token
+    # If referer is not set, it responseds with 403, not logged in error
+    headers['referer'] = 'https://account.riotgames.com/'
     async with session.put('https://account.riotgames.com/api/account/v1/user/password',
                            proxy=proxy,
                            proxy_auth=get_basic_auth(proxy_user, proxy_pass),
