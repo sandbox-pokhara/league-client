@@ -222,7 +222,7 @@ async def get_loot(session, account_info, ledge_token, proxy=None, proxy_auth=No
 
     Args:
         session (league_client.rso.ClientSession): aiohttp session
-        account_info (dict): account info {'region': '...', 'account_id': '...'}
+        account_info (dict): account info {'region': '...', 'summoner_id': '...'}
         ledge_token (str): ledge token
         proxy (str, optional): proxy url. Defaults to None.
         proxy_auth (BasicAuth, optional): proxy auth(username, password). Defaults to None.
@@ -237,8 +237,8 @@ async def get_loot(session, account_info, ledge_token, proxy=None, proxy_auth=No
     '''
     try:
         region = account_info['region']
-        account_id = account_info['account_id']
-        url = f'https://{LEDGE_URL_MAPPING[region]}-red.lol.sgp.pvp.net/loot/v1/playerlootdefinitions/location/{LOCATION_PARAMETERS[region]}/playerId/{account_id}'
+        summoner_id = account_info['summoner_id']
+        url = f'https://{LEDGE_URL_MAPPING[region]}-red.lol.sgp.pvp.net/loot/v1/playerlootdefinitions/location/{LOCATION_PARAMETERS[region]}/playerId/{summoner_id}'
         headers = {
             'Authorization': f'Bearer {ledge_token}',
         }

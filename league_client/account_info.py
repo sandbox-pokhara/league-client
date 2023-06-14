@@ -12,8 +12,7 @@ from league_client.rso_userinfo import parse_userinfo
 
 
 async def get_account_info(
-    username, password,
-    user_info=True, skins=True,
+    username, password, skins=True,
     honor_level=True, rank_info=True,
     proxy=None, proxy_user=None, proxy_pass=None
 ):
@@ -22,7 +21,6 @@ async def get_account_info(
     Args:
         username (str): account username
         password (str): account password
-        user_info (bool, optional): whether to parse user_info. Defaults to True.
         skins (bool, optional): whether to parse skins_info. Defaults to True.
         honor_level (bool, optional): whether to parse honor_info. Defaults to True.
         rank_info (bool, optional): whether to parse rank_info. Defaults to True.
@@ -31,7 +29,7 @@ async def get_account_info(
         proxy_pass (str, optional): proxy password. Defaults to None.
 
     Returns:
-        dict: 'user_info': {'summoner_level', 'summoner_name', 'email_verified', 'phone_number_verified', 'ban_stats', ...} or None,
+        dict: 'user_info': {'summoner_level', 'summoner_name', 'email_verified', 'phone_number_verified', 'ban_stats', ...},
             'account_info': {'puuid', 'region', ...} or None,
             'essence_info': {'blue_essence', 'orange_essence', 'mythic_essence'} or None,
             'skins_info': {'owned_skins', 'normal_skins', 'permanent_skins'} or None,
@@ -41,14 +39,15 @@ async def get_account_info(
     owned_skins_res = loot_res = honor_level_res = rank_info_res = tokens = account_info = normal_skins = permanent_skins = blue_essence = orange_essence = mythic_essence = None
     userinfo = {}
     proxy_auth = get_basic_auth(proxy_user, proxy_pass)
-    if user_info:
-        async with aiohttp.ClientSession() as session:
-            tokens = await get_tokens(session, username, password, proxy, proxy_auth, client_id='riot-client')
-            userinfo = await parse_userinfo(session, tokens['access_token'], proxy, proxy_auth, parse_token=False)
-    if (skins or honor_level or rank_info):
+    async with aiohttp.ClientSession() as session:
+        tokens = await get_tokens(session, username, password, proxy, proxy_auth, client_id='riot-client')
+        userinfo = await parse_userinfo(session, tokens['access_token'], proxy, proxy_auth, parse_token=False)
+    summoner_id = userinfo.get('info', {}).get('summoner_id', None)
+    if (skins or honor_level or rank_info) and summoner_id:
         async with aiohttp.ClientSession() as session:
             tokens = await get_tokens(session, username, password, proxy, proxy_auth, client_id='lol', entitlement=True)
             account_info = parse_info_from_access_token(tokens['access_token'])
+            account_info['summoner_id'] = summoner_id
             ledge_token = await parse_ledge_token(session, account_info, tokens, proxy, proxy_auth)
             if skins:
                 owned_skins_res = await get_owned_skins(session, account_info, ledge_token, proxy=None, proxy_auth=None)
