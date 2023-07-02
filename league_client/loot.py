@@ -108,3 +108,7 @@ def get_champion_mastery_chest_count(connection):
 
 def get_masterwork_chest_count(connection):
     return get_loot_count(connection, "CHEST_224")
+
+
+def get_blue_essence_count(connection):
+    return get_loot_count(connection, "CURRENCY_champion")
