@@ -6,7 +6,7 @@ from .logger import logger
 
 
 def logout(league_lockfile):
-    logger.info('Logging out...')
+    logger.info("Logging out...")
     kill_league_client()
     kill_riot_client()
     remove_lockfile(league_lockfile)

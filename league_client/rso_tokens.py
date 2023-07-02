@@ -13,7 +13,7 @@ from .rso import HEADERS
 
 
 def _parse_access_token_regex(data):
-    '''Extract access token from data
+    """Extract access token from data
 
     Args:
         data (dict): response json from authorization request
@@ -23,21 +23,21 @@ def _parse_access_token_regex(data):
 
     Returns:
         str: parsed access token
-    '''
+    """
 
     try:
         pattern = re.compile(
-            r'access_token=((?:[a-zA-Z]|\d|\.|-|_)*).*id_token=((?:[a-zA-Z]|\d|\.|-|_)*).*expires_in=(\d*)'
+            r"access_token=((?:[a-zA-Z]|\d|\.|-|_)*).*id_token=((?:[a-zA-Z]|\d|\.|-|_)*).*expires_in=(\d*)"
         )
-        token = pattern.findall(data['response']['parameters']['uri'])[0][0]
+        token = pattern.findall(data["response"]["parameters"]["uri"])[0][0]
         return token
     except (re.error, KeyError, IndexError) as e:
-        logger.exception('Failed to parse tokens (regex)')
-        raise ParseError('Failed to parse tokens (regex)') from e
+        logger.exception("Failed to parse tokens (regex)")
+        raise ParseError("Failed to parse tokens (regex)") from e
 
 
 def parse_info_from_access_token(access_token):
-    '''Parse info from access token
+    """Parse info from access token
 
     Args:
         access_token (str): access token
@@ -50,24 +50,25 @@ def parse_info_from_access_token(access_token):
             puuid (str): player uuid
             account_id (str): account id
             region (str): region
-    '''
+    """
     try:
         payload = access_token.split(".")[1]
-        info = urlsafe_b64decode(f'{payload}===')
+        info = urlsafe_b64decode(f"{payload}===")
         data = json.loads(info)
         return {
-            'puuid': data['sub'],
-            'account_id': data['dat']['u'],
-            'region': data['dat']['r']
-
+            "puuid": data["sub"],
+            "account_id": data["dat"]["u"],
+            "region": data["dat"]["r"],
         }
     except (ValueError, KeyError, IndexError, TypeError) as e:
-        logger.exception('Failed to parse info from access token')
-        raise ParseError('Failed to parse info from access token') from e
+        logger.exception("Failed to parse info from access token")
+        raise ParseError("Failed to parse info from access token") from e
 
 
-async def parse_auth_access_token(session, username, password, proxy=None, proxy_auth=None):
-    '''Parse access token from authorization credentials
+async def parse_auth_access_token(
+    session, username, password, proxy=None, proxy_auth=None
+):
+    """Parse access token from authorization credentials
 
     Args:
         session (league_client.rso.ClentSession): aiohttp session
@@ -86,16 +87,16 @@ async def parse_auth_access_token(session, username, password, proxy=None, proxy
 
     Returns:
         str: access_token
-    '''
+    """
     data = {
-        'type': 'auth',
-        'username': username,
-        'password': password,
-        'remember': True,
+        "type": "auth",
+        "username": username,
+        "password": password,
+        "remember": True,
     }
     try:
         async with session.put(
-            'https://auth.riotgames.com/api/v1/authorization',
+            "https://auth.riotgames.com/api/v1/authorization",
             proxy=proxy,
             proxy_auth=proxy_auth,
             json=data,
@@ -103,26 +104,26 @@ async def parse_auth_access_token(session, username, password, proxy=None, proxy
         ) as res:
             if not res.ok:
                 logger.debug(res.status)
-                raise RSOAuthorizeError('Failed to get access token', 'ACCESS_TOKEN')
+                raise RSOAuthorizeError("Failed to get access token", "ACCESS_TOKEN")
             data = await res.json()
-            response_type = data['type']
-            if response_type == 'response':
+            response_type = data["type"]
+            if response_type == "response":
                 access_token = _parse_access_token_regex(data)
                 return access_token
-            elif response_type == 'multifactor':
-                raise RSOAuthorizeError('Multifactor authentication', 'MULTIFACTOR')
-            elif response_type == 'auth' and data['error'] == 'auth_failure':
-                raise RSOAuthorizeError('Wrong password', 'WRONG_PASSWORD')
-            elif response_type == 'auth' and data['error'] == 'rate_limited':
-                raise RSOAuthorizeError('Rate limited', 'RATE_LIMITED')
-            raise RSOAuthorizeError(f'Got response type: {response_type}', 'UNKNOWN')
+            elif response_type == "multifactor":
+                raise RSOAuthorizeError("Multifactor authentication", "MULTIFACTOR")
+            elif response_type == "auth" and data["error"] == "auth_failure":
+                raise RSOAuthorizeError("Wrong password", "WRONG_PASSWORD")
+            elif response_type == "auth" and data["error"] == "rate_limited":
+                raise RSOAuthorizeError("Rate limited", "RATE_LIMITED")
+            raise RSOAuthorizeError(f"Got response type: {response_type}", "UNKNOWN")
     except (aiohttp.ClientError, ValueError, KeyError) as e:
-        logger.exception('Failed to parse access token')
-        raise ParseError('Failed to parse access token', 'UNKNOWN') from e
+        logger.exception("Failed to parse access token")
+        raise ParseError("Failed to parse access token", "UNKNOWN") from e
 
 
 async def parse_entitlements_token(session, access_token, proxy=None, proxy_auth=None):
-    '''Parse entitlements token using access token
+    """Parse entitlements token using access token
 
     Args:
         session (league_client.rso.ClentSession): aiohttp session
@@ -136,10 +137,10 @@ async def parse_entitlements_token(session, access_token, proxy=None, proxy_auth
 
     Returns:
         str: entitlements token
-    '''
+    """
     headers = {
-        'Content-Type': 'application/json',
-        'Authorization': f'Bearer {access_token}'
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {access_token}",
     }
     try:
         async with session.post(
@@ -151,21 +152,26 @@ async def parse_entitlements_token(session, access_token, proxy=None, proxy_auth
         ) as res:
             if not res.ok:
                 logger.debug(res.status)
-                raise RSOAuthorizeError('Failed to get entitlements token', 'ENTITLEMENTS_TOKEN')
-            return (await res.json())['entitlements_token']
+                raise RSOAuthorizeError(
+                    "Failed to get entitlements token", "ENTITLEMENTS_TOKEN"
+                )
+            return (await res.json())["entitlements_token"]
     except (aiohttp.ClientError, ValueError, KeyError) as e:
-        logger.exception('Failed to parse entitlements token')
-        raise ParseError('Failed to parse entitlements token', 'UNKNOWN') from e
+        logger.exception("Failed to parse entitlements token")
+        raise ParseError("Failed to parse entitlements token", "UNKNOWN") from e
 
 
 async def get_tokens(
-        session, username, password,
-        proxy=None, proxy_auth=None,
-        client_id='lol',
-        scope='openid offline_access lol ban profile email phone birthdate lol_region',
-        entitlement=False
+    session,
+    username,
+    password,
+    proxy=None,
+    proxy_auth=None,
+    client_id="lol",
+    scope="openid offline_access lol ban profile email phone birthdate lol_region",
+    entitlement=False,
 ):
-    '''Authorize RSO and get access token and entitlements token(optional)
+    """Authorize RSO and get access token and entitlements token(optional)
 
     Args:
         session (league_client.rso.ClentSession): aiohttp session
@@ -191,10 +197,14 @@ async def get_tokens(
         dict:
             access_token (str): access token
             entitlements_token (str, optional): entitlements token
-    '''
+    """
     access_token = entitlements_token = None
     await parse_auth_code(session, client_id, scope, proxy, proxy_auth)
-    access_token = await parse_auth_access_token(session, username, password, proxy, proxy_auth)
+    access_token = await parse_auth_access_token(
+        session, username, password, proxy, proxy_auth
+    )
     if entitlement:
-        entitlements_token = await parse_entitlements_token(session, access_token, proxy, proxy_auth)
-    return {'access_token': access_token, 'entitlements_token': entitlements_token}
+        entitlements_token = await parse_entitlements_token(
+            session, access_token, proxy, proxy_auth
+        )
+    return {"access_token": access_token, "entitlements_token": entitlements_token}

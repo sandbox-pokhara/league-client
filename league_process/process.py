@@ -7,7 +7,7 @@ from .utils import kill_process
 
 
 def open_riot_client(path):
-    while not is_running('RiotClientServices.exe'):
+    while not is_running("RiotClientServices.exe"):
         try:
             subprocess.Popen([path])
         except PermissionError:
@@ -17,7 +17,7 @@ def open_riot_client(path):
 
 
 def open_league_client(path):
-    while not is_running('LeagueClient.exe'):
+    while not is_running("LeagueClient.exe"):
         try:
             subprocess.Popen([path])
         except PermissionError:
@@ -27,17 +27,17 @@ def open_league_client(path):
 
 
 def kill_league_client():
-    kill_process('LeagueClient.exe')
-    kill_process('LeagueClientUx.exe')
-    kill_process('LeagueClientUxRender.exe')
-    kill_process('LeagueCrashHandler.exe')
+    kill_process("LeagueClient.exe")
+    kill_process("LeagueClientUx.exe")
+    kill_process("LeagueClientUxRender.exe")
+    kill_process("LeagueCrashHandler.exe")
 
 
 def kill_riot_client():
-    kill_process('RiotClientServices.exe')
-    kill_process('RiotClientCrashHandler.exe')
-    kill_process('RiotClientUx.exe')
-    kill_process('RiotClientUxRender.exe')
+    kill_process("RiotClientServices.exe")
+    kill_process("RiotClientCrashHandler.exe")
+    kill_process("RiotClientUx.exe")
+    kill_process("RiotClientUxRender.exe")
 
 
 def remove_lockfile(lockfile):

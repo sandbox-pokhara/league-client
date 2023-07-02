@@ -12,48 +12,49 @@ from .loot import get_masterwork_chest_count
 def forge(connection, recipe, data, repeat=1):
     if repeat == 0:
         return
-    logger.info(f'Forging {recipe}, repeat: {repeat}')
-    connection.post(f'/lol-loot/v1/recipes/{recipe}/craft?repeat={repeat}', json=data)
+    logger.info(f"Forging {recipe}, repeat: {repeat}")
+    connection.post(f"/lol-loot/v1/recipes/{recipe}/craft?repeat={repeat}", json=data)
 
 
 def forge_key_from_key_fragments(connection, repeat=1):
-    forge(connection, 'MATERIAL_key_fragment_forge', ['MATERIAL_key_fragment'], repeat)
+    forge(connection, "MATERIAL_key_fragment_forge", ["MATERIAL_key_fragment"], repeat)
 
 
 def open_generic_chests(connection, repeat=1):
-    forge(connection, 'CHEST_generic_OPEN', ['CHEST_generic', 'MATERIAL_key'], repeat)
+    forge(connection, "CHEST_generic_OPEN", ["CHEST_generic", "MATERIAL_key"], repeat)
 
 
 def open_masterwork_chests(connection, repeat=1):
-    forge(connection, 'CHEST_224_OPEN', ['CHEST_224', 'MATERIAL_key'], repeat)
+    forge(connection, "CHEST_224_OPEN", ["CHEST_224", "MATERIAL_key"], repeat)
 
 
 def open_champion_mastery_chest(connection, repeat=1):
     forge(
         connection,
-        'CHEST_champion_mastery_OPEN',
-        ['CHEST_champion_mastery', 'MATERIAL_key'],
+        "CHEST_champion_mastery_OPEN",
+        ["CHEST_champion_mastery", "MATERIAL_key"],
         repeat,
     )
 
 
-def open_chest_by_loot_id(connection, loot_id, requires_key=True,  repeat=1):
+def open_chest_by_loot_id(connection, loot_id, requires_key=True, repeat=1):
     data = [loot_id]
     if requires_key:
-        data.append('MATERIAL_key')
-    forge(connection, f'{loot_id}_OPEN', data, repeat)
+        data.append("MATERIAL_key")
+    forge(connection, f"{loot_id}_OPEN", data, repeat)
 
 
 def open_chest_loots(connection, loots, requires_key=True):
     for loot in loots:
-        count = loot['count']
+        count = loot["count"]
         if requires_key:
             key_count = get_key_count(connection)
             if key_count == 0:
                 return
             count = min(count, key_count)
-        open_chest_by_loot_id(connection, loot['lootId'],
-                              requires_key=requires_key, repeat=count)
+        open_chest_by_loot_id(
+            connection, loot["lootId"], requires_key=requires_key, repeat=count
+        )
         time.sleep(1)
 
 
@@ -103,7 +104,7 @@ def open_orbs(connection, retry_limit=10):
         if loot == []:
             time.sleep(1)
             continue
-        orbs = [l for l in loot if 'orb' in l['localizedName'].lower()]
+        orbs = [l for l in loot if "orb" in l["localizedName"].lower()]
         open_chest_loots(connection, orbs, requires_key=False)
 
 
@@ -113,7 +114,7 @@ def open_bags(connection, retry_limit=10):
         if loot == []:
             time.sleep(1)
             continue
-        bags = [l for l in loot if 'bag' in l['localizedName'].lower()]
+        bags = [l for l in loot if "bag" in l["localizedName"].lower()]
         open_chest_loots(connection, bags, requires_key=False)
 
 
@@ -123,7 +124,10 @@ def open_eternals_capsules(connection, retry_limit=10):
         if loot == []:
             time.sleep(1)
             continue
-        eternals_capsules = [l for l in loot
-                             if 'eternals' in l['localizedName'].lower()
-                             and 'capsule' in l['localizedName'].lower()]
+        eternals_capsules = [
+            l
+            for l in loot
+            if "eternals" in l["localizedName"].lower()
+            and "capsule" in l["localizedName"].lower()
+        ]
         open_chest_loots(connection, eternals_capsules, requires_key=False)

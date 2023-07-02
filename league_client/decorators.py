@@ -10,5 +10,7 @@ def handle_excpetions(default=True):
                 return func(*args, **kwargs)
             except (json.decoder.JSONDecodeError, requests.RequestException):
                 return default
+
         return inner
+
     return decorator

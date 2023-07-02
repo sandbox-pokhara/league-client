@@ -1,14 +1,13 @@
 __all__ = [
-    'LeagueClientError',    # Base exception for all exceptions raised by this library.
-
+    "LeagueClientError",  # Base exception for all exceptions raised by this library.
     # Specific exceptions
-    'ParseError',
-    'RSOAuthorizeError'
+    "ParseError",
+    "RSOAuthorizeError",
 ]
 
 
 class LeagueClientError(Exception):
-    '''Base exception for all exceptions raised by this library.'''
+    """Base exception for all exceptions raised by this library."""
 
     def __init__(self, message=None, code=None):
         self.message = message
@@ -17,12 +16,12 @@ class LeagueClientError(Exception):
 
 
 class ParseError(LeagueClientError):
-    '''Raised when an error occurs during parsing process.'''
+    """Raised when an error occurs during parsing process."""
 
 
 class RSOAuthorizeError(LeagueClientError):
-    '''Raised when an error occurs during RSO authorization process.'''
+    """Raised when an error occurs during RSO authorization process."""
 
 
 class LeagueEdgeError(LeagueClientError):
-    '''Raised when an error occurs during league_edge authorization process.'''
+    """Raised when an error occurs during league_edge authorization process."""
