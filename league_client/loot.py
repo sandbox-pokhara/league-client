@@ -23,6 +23,8 @@ def get_player_loot_map(connection):
 
 def get_loot_count(connection, loot_id):
     loot = get_loot(connection)
+    if loot == []:
+        return -1
     filtered_loot = [l for l in loot if l["lootId"] == loot_id]
     if filtered_loot == []:
         return 0
