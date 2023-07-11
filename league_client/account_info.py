@@ -1,5 +1,6 @@
 import aiohttp
 
+from league_client.exceptions import AccountBannedError
 from league_client.rso import get_basic_auth
 from league_client.rso_ledge import get_honor_level
 from league_client.rso_ledge import get_loot
@@ -58,11 +59,26 @@ async def get_account_info(
     proxy_auth = get_basic_auth(proxy_user, proxy_pass)
     async with aiohttp.ClientSession() as session:
         tokens = await get_tokens(
-            session, username, password, proxy, proxy_auth, client_id="riot-client"
+            session,
+            username,
+            password,
+            proxy,
+            proxy_auth,
+            client_id="riot-client",
         )
         userinfo = await parse_userinfo(
-            session, tokens["access_token"], proxy, proxy_auth, parse_token=False
+            session,
+            tokens["access_token"],
+            proxy,
+            proxy_auth,
+            parse_token=False,
         )
+    # Check if account is banned or not
+    restrictions = [
+        r["type"] for r in userinfo["info"]["ban_stats"]["restrictions"]
+    ]
+    if "PERMANENT_BAN" in restrictions:
+        raise AccountBannedError("Account is banned.", code="ACCOUNT_BANNED")
     summoner_id = userinfo.get("info", {}).get("summoner_id", None)
     if (skins or honor_level or rank_info) and summoner_id:
         async with aiohttp.ClientSession() as session:
@@ -82,10 +98,18 @@ async def get_account_info(
             )
             if skins:
                 owned_skins_res = await get_owned_skins(
-                    session, account_info, ledge_token, proxy=None, proxy_auth=None
+                    session,
+                    account_info,
+                    ledge_token,
+                    proxy=None,
+                    proxy_auth=None,
                 )
                 loot_res = await get_loot(
-                    session, account_info, ledge_token, proxy=None, proxy_auth=None
+                    session,
+                    account_info,
+                    ledge_token,
+                    proxy=None,
+                    proxy_auth=None,
                 )
                 blue_essence = loot_res["blue_essence"]
                 orange_essence = loot_res["orange_essence"]
@@ -94,11 +118,19 @@ async def get_account_info(
                 permanent_skins = loot_res["permanent_skins"]
             if honor_level:
                 honor_level_res = await get_honor_level(
-                    session, account_info, ledge_token, proxy=None, proxy_auth=None
+                    session,
+                    account_info,
+                    ledge_token,
+                    proxy=None,
+                    proxy_auth=None,
                 )
             if rank_info:
                 rank_info_res = await get_rank_info(
-                    session, account_info, ledge_token, proxy=None, proxy_auth=None
+                    session,
+                    account_info,
+                    ledge_token,
+                    proxy=None,
+                    proxy_auth=None,
                 )
     return {
         "user_info": userinfo.get("info"),

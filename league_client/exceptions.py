@@ -25,3 +25,7 @@ class RSOAuthorizeError(LeagueClientError):
 
 class LeagueEdgeError(LeagueClientError):
     """Raised when an error occurs during league_edge authorization process."""
+
+
+class AccountBannedError(LeagueClientError):
+    """Raised when an account has been permanently banned"""
