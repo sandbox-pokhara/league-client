@@ -364,13 +364,19 @@ async def get_rank_info(
             if not res.ok:
                 logger.debug(res.status)
                 raise LeagueEdgeError("Failed to get rank info", "RANK_INFO")
-            rank = (await res.json())["queues"][0]
+            queues = (await res.json())["queues"]
+            filtered_queue = [q for q in queues if q["queueType"] == "RANKED_SOLO_5x5"]
+            if not filtered_queue:
+                raise LeagueEdgeError(
+                    "Failed to get ranked-solo queue", "QUEUE_NOT_FOUND"
+                )
+            ranked_queue = filtered_queue[0]
             return {
-                "queue": rank["queueType"],  # 'RANKED_SOLO_5x5
-                "tier": rank.get("tier", "UNRANKED"),
-                "division": rank.get("rank"),
-                "wins": rank["wins"],
-                "losses": rank["losses"],
+                "queue": ranked_queue["queueType"],  # 'RANKED_SOLO_5x5
+                "tier": ranked_queue.get("tier", "UNRANKED"),
+                "division": ranked_queue.get("rank"),
+                "wins": ranked_queue.get("wins", 0),
+                "losses": ranked_queue.get("losses", 0),
             }
     except (aiohttp.ClientError, ValueError, KeyError, IndexError) as e:
         logger.exception("Failed to get rank info")
