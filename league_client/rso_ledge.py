@@ -87,6 +87,7 @@ async def create_login_queue(
             headers=headers,
         ) as res:
             if not res.ok:
+                logger.debug(await res.text())
                 logger.debug(res.status)
                 raise LeagueEdgeError("Failed to create login queue", "LOGIN_QUEUE")
             return (await res.json())["token"]

@@ -1,6 +1,9 @@
 import aiohttp
 
 from league_client.exceptions import AccountBannedError
+from league_client.exceptions import AccountRestrictedError
+from league_client.exceptions import ChatRestrictedError
+from league_client.exceptions import TimeBanError
 from league_client.rso import get_basic_auth
 from league_client.rso_ledge import get_honor_level
 from league_client.rso_ledge import get_loot
@@ -42,19 +45,17 @@ async def get_account_info(
             'honor_info': {'honor_level', ...} or None,
             'rank_info': {'rank', 'tier', 'wins', 'losses', ...} or None,
     """
-    owned_skins_res = (
-        loot_res
-    ) = (
-        honor_level_res
-    ) = (
-        rank_info_res
-    ) = (
-        tokens
-    ) = (
-        account_info
-    ) = (
-        normal_skins
-    ) = permanent_skins = blue_essence = orange_essence = mythic_essence = None
+    owned_skins_res = None
+    loot_res = None
+    honor_level_res = None
+    rank_info_res = None
+    tokens = None
+    account_info = None
+    normal_skins = None
+    permanent_skins = None
+    blue_essence = None
+    orange_essence = None
+    mythic_essence = None
     userinfo = {}
     proxy_auth = get_basic_auth(proxy_user, proxy_pass)
     async with aiohttp.ClientSession() as session:
@@ -73,14 +74,25 @@ async def get_account_info(
             proxy_auth,
             parse_token=False,
         )
+    restrictions = userinfo["info"]["ban_stats"]["restrictions"]
+    restrictions = [r["type"] for r in restrictions]
     # Check if account is banned or not
-    restrictions = [
-        r["type"] for r in userinfo["info"]["ban_stats"]["restrictions"]
-    ]
     if "PERMANENT_BAN" in restrictions:
         raise AccountBannedError("Account is banned.", code="ACCOUNT_BANNED")
     summoner_id = userinfo.get("info", {}).get("summoner_id", None)
     if (skins or honor_level or rank_info) and summoner_id:
+        # if the account has some kind of restriction,
+        # parse_ledge_token fails, therefore these exceptions must be rasied
+        if restrictions != []:
+            if "TEXT_CHAT_RESTRICTION" in restrictions:
+                raise ChatRestrictedError(
+                    "Account has chat restriction.", code="CHAT_RESTRICTED"
+                )
+            if "TIME_BAN" in restrictions:
+                raise TimeBanError("Account has time ban restriction.", code="TIME_BAN")
+            raise AccountRestrictedError(
+                "Account has one or more restrictions.", code="ACCOUNT_RESTRICTED"
+            )
         async with aiohttp.ClientSession() as session:
             tokens = await get_tokens(
                 session,

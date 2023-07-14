@@ -27,5 +27,17 @@ class LeagueEdgeError(LeagueClientError):
     """Raised when an error occurs during league_edge authorization process."""
 
 
-class AccountBannedError(LeagueClientError):
+class AccountRestrictedError(LeagueClientError):
+    """Raised when an account has one or more restrictions"""
+
+
+class AccountBannedError(AccountRestrictedError):
     """Raised when an account has been permanently banned"""
+
+
+class ChatRestrictedError(AccountRestrictedError):
+    """Raised when an account has been chat restricted"""
+
+
+class TimeBanError(AccountRestrictedError):
+    """Raised when an account has TIME_BAN restriction"""
