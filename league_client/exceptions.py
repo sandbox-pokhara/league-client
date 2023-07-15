@@ -32,11 +32,10 @@ class LeagueEdgeError(LeagueClientError):
 class LeagueEdgeBadResponse(LeagueEdgeError):
     """Raised when res.ok is false during league_edge authorization process."""
 
-    def __init__(self, message, code, status_code, ok, json_):
+    def __init__(self, message, code, status_code, json_):
         self.message = message
         self.code = code
         self.status_code = status_code
-        self.ok = ok
         self.json = json_
         super().__init__(message, code)
 
@@ -46,7 +45,7 @@ class LeagueEdgeBadResponse(LeagueEdgeError):
             data = await res.json()
         except ContentTypeError:
             data = None
-        return LeagueEdgeBadResponse(message, code, res.status, res.ok, data)
+        return LeagueEdgeBadResponse(message, code, res.status, data)
 
 
 class AccountRestrictedError(LeagueClientError):
