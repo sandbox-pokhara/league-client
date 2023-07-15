@@ -16,7 +16,7 @@ PLAYER_PLATFORM_MAPPING = {
     "LA2": "usw2",
     "TR1": "euc1",
     "RU": "euc1",
-    "OC1": "usw2",
+    "OC1": "apse1",
     "BR1": "usw2",
     "JP1": "apne1",
     "SG2": "apse1",
