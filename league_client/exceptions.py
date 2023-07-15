@@ -1,3 +1,5 @@
+from aiohttp import ContentTypeError
+
 __all__ = [
     "LeagueClientError",  # Base exception for all exceptions raised by this library.
     # Specific exceptions
@@ -25,6 +27,26 @@ class RSOAuthorizeError(LeagueClientError):
 
 class LeagueEdgeError(LeagueClientError):
     """Raised when an error occurs during league_edge authorization process."""
+
+
+class LeagueEdgeBadResponse(LeagueEdgeError):
+    """Raised when res.ok is false during league_edge authorization process."""
+
+    def __init__(self, message, code, status_code, ok, json_):
+        self.message = message
+        self.code = code
+        self.status_code = status_code
+        self.ok = ok
+        self.json = json_
+        super().__init__(message, code)
+
+    @classmethod
+    async def create(self, message, code, res):
+        try:
+            data = await res.json()
+        except ContentTypeError:
+            data = None
+        return LeagueEdgeBadResponse(message, code, res.status, res.ok, data)
 
 
 class AccountRestrictedError(LeagueClientError):

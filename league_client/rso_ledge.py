@@ -2,6 +2,7 @@ from urllib.parse import urljoin
 
 import aiohttp
 
+from league_client.exceptions import LeagueEdgeBadResponse
 from league_client.exceptions import LeagueEdgeError
 from league_client.exceptions import ParseError
 from league_client.rso_userinfo import parse_userinfo
@@ -89,7 +90,9 @@ async def create_login_queue(
             if not res.ok:
                 logger.debug(await res.text())
                 logger.debug(res.status)
-                raise LeagueEdgeError("Failed to create login queue", "LOGIN_QUEUE")
+                raise await LeagueEdgeBadResponse.create(
+                    "Failed to create login queue", "LOGIN_QUEUE", res
+                )
             return (await res.json())["token"]
     except (aiohttp.ClientError, ValueError, KeyError) as e:
         logger.exception("Failed to create login queue")
@@ -136,7 +139,9 @@ async def create_login_session(
         ) as res:
             if not res.ok:
                 logger.debug(res.status)
-                raise LeagueEdgeError("Failed to create login session", "LOGIN_SESSION")
+                raise await LeagueEdgeBadResponse.create(
+                    "Failed to create login session", "LOGIN_SESSION", res
+                )
             return await res.json()
     except (aiohttp.ClientError, ValueError, KeyError) as e:
         logger.exception("Failed to create login session")
@@ -216,7 +221,9 @@ async def get_owned_skins(
         ) as res:
             if not res.ok:
                 logger.debug(res.status)
-                raise LeagueEdgeError("Failed to get owned skins", "OWNED_SKINS")
+                raise await LeagueEdgeBadResponse.create(
+                    "Failed to get owned skins", "OWNED_SKINS", res
+                )
             owned_skins = (await res.json())["data"]["items"]["CHAMPION_SKIN"]
             return owned_skins
     except (aiohttp.ClientError, ValueError, KeyError, TypeError) as e:
@@ -254,7 +261,9 @@ async def get_loot(session, account_info, ledge_token, proxy=None, proxy_auth=No
         ) as res:
             if not res.ok:
                 logger.debug(res.status)
-                raise LeagueEdgeError("Failed to get loot stats", "LOOT_STATS")
+                raise await LeagueEdgeBadResponse.create(
+                    "Failed to get loot stats", "LOOT_STATS", res
+                )
             loot = (await res.json())["playerLoot"]
             blue_essence = next(
                 filter(lambda item: "CURRENCY_champion" in item["lootName"], loot), None
@@ -326,7 +335,9 @@ async def get_honor_level(
         ) as res:
             if not res.ok:
                 logger.debug(res.status)
-                raise LeagueEdgeError("Failed to get honor level", "HONOR_LEVEL")
+                raise await LeagueEdgeBadResponse.create(
+                    "Failed to get honor level", "HONOR_LEVEL", res
+                )
             return await res.json()
     except (aiohttp.ClientError, ValueError, KeyError) as e:
         logger.exception("Failed to get honor level")
@@ -364,7 +375,9 @@ async def get_rank_info(
         ) as res:
             if not res.ok:
                 logger.debug(res.status)
-                raise LeagueEdgeError("Failed to get rank info", "RANK_INFO")
+                raise await LeagueEdgeBadResponse.create(
+                    "Failed to get rank info", "RANK_INFO", res
+                )
             queues = (await res.json())["queues"]
             filtered_queue = [q for q in queues if q["queueType"] == "RANKED_SOLO_5x5"]
             if not filtered_queue:
