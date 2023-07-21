@@ -2,6 +2,7 @@ import aiohttp
 
 from league_client.exceptions import ParseError
 from league_client.exceptions import RSOAuthorizeError
+from league_client.utils import get_internal_region_by_tag
 
 from .logger import logger
 
@@ -35,6 +36,7 @@ async def parse_userinfo(
                         'phone_number_verified': (bool) whether phone number is verified or not
                         'ban_status': (dict) ban status 'restrictions': (list) list of restrictions
                         'region': (str) region
+                        'internal_region': (str) internal region
                         'game_name': (str) game name
             'token': (str or None) token (if parse_token=True)
     """
@@ -68,6 +70,9 @@ async def parse_userinfo(
                     "username": userinfo["username"],
                     "ban_stats": userinfo["ban"],
                     "region": userinfo["region"]["tag"],
+                    "internal_region": get_internal_region_by_tag(
+                        userinfo["region"]["tag"]
+                    ),
                     "game_name": userinfo["acct"]["game_name"],
                 }
             else:

@@ -54,3 +54,14 @@ async def parse_blue_essence(session, region, headers, proxy, proxy_auth):
             logger.debug(res.status)
             return {"error": "Failed to parse blue essence"}, 1
         return await res.json(), None
+
+
+def get_internal_region_by_tag(region):
+    region_u = region.upper()
+    if region_u == "LAN":
+        return "LA1"
+    elif region_u == "LAS":
+        return "LA2"
+    elif region_u == "OC":
+        return "OC1"
+    return region_u
