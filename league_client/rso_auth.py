@@ -23,36 +23,76 @@ async def parsing_auth_code(session, params, proxy, proxy_user=None, proxy_pass=
         return res.ok
 
 
-async def rso_auth(
-    session, username, password, proxy, proxy_user=None, proxy_pass=None
-):
+async def rso_authorize(session, username, password, proxy=None, proxy_auth=None):
+    """Parse access token from authorization credentials
+
+    Args:
+        session (league_client.rso.ClentSession): aiohttp session
+        username (str): account username
+        username (str): account password
+        proxy (str, optional): proxy url
+        proxy_auth (BasicAuth, optional): proxy auth(username, password)
+
+    Raises:
+        RSOAuthorizeError: ACCESS_TOKEN - Failed to get access token
+        RSOAuthorizeError: MULTIFACTOR - Account has multifactor auth enabled
+        RSOAuthorizeError: WRONG_PASSWORD - Password is incorrect
+        RSOAuthorizeError: RATE_LIMITED - Rate limited by RSO, use proxy
+
+        ParseError
+
+    Returns:
+        dict:
+        {
+            "type": "response",
+            "response": {
+                "mode": "fragment",
+                "parameters": {
+                    "uri": (
+                        "http://localhost/redirect#access_token=..."
+                        "&scope=scope1+scope2"
+                        "&iss=https://auth.riotgames.com"
+                        "&id_token=..."
+                        "&token_type=Bearer"
+                        "&session_state=..."
+                        "&expires_in=3600"
+                    )
+                },
+            },
+            "country": "npl",
+        }
+    """
     data = {
         "type": "auth",
         "username": username,
         "password": password,
         "remember": True,
-        "language": "en_US",
     }
-    async with session.put(
-        "https://auth.riotgames.com/api/v1/authorization",
-        proxy=proxy,
-        proxy_auth=get_basic_auth(proxy_user, proxy_pass),
-        json=data,
-        headers=HEADERS,
-    ) as res:
-        if not res.ok:
-            logger.debug(res.status)
-            logger.debug(await res.text())
-            return None
-        data = await res.json()
-        if data["type"] != "response":
-            logger.debug(data)
-            return None
-        try:
-            return data["response"]["parameters"]["uri"]
-        except KeyError:
-            logger.debug(data)
-            return None
+    try:
+        async with session.put(
+            "https://auth.riotgames.com/api/v1/authorization",
+            proxy=proxy,
+            proxy_auth=proxy_auth,
+            json=data,
+            headers=HEADERS,
+        ) as res:
+            if not res.ok:
+                logger.debug(res.status)
+                raise RSOAuthorizeError("Failed to get access token", "ACCESS_TOKEN")
+            data = await res.json()
+            response_type = data["type"]
+            if response_type == "response":
+                return data
+            elif response_type == "multifactor":
+                raise RSOAuthorizeError("Multifactor authentication", "MULTIFACTOR")
+            elif response_type == "auth" and data["error"] == "auth_failure":
+                raise RSOAuthorizeError("Wrong password", "WRONG_PASSWORD")
+            elif response_type == "auth" and data["error"] == "rate_limited":
+                raise RSOAuthorizeError("Rate limited", "RATE_LIMITED")
+            raise RSOAuthorizeError(f"Got response type: {response_type}", "UNKNOWN")
+    except (aiohttp.ClientError, ValueError, KeyError) as e:
+        logger.exception("Failed to parse access token")
+        raise ParseError("Failed to parse access token", "UNKNOWN") from e
 
 
 async def parse_auth_code(session, client_id, scope, proxy=None, proxy_auth=None):
@@ -91,6 +131,6 @@ async def parse_auth_code(session, client_id, scope, proxy=None, proxy_auth=None
             if not res.ok:
                 logger.debug(res.status)
                 raise RSOAuthorizeError("Failed to get authorization code", "AUTH_CODE")
-    except (aiohttp.ClientError) as e:
+    except aiohttp.ClientError as e:
         logger.exception("Failed to parse authorization code")
         raise ParseError("Failed to parse authorization code", "UNKNOWN") from e

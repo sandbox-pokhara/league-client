@@ -6,7 +6,7 @@ from .rso import HEADERS
 from .rso import ClientSession
 from .rso import get_basic_auth
 from .rso_auth import parsing_auth_code
-from .rso_auth import rso_auth
+from .rso_auth import rso_authorize
 
 accountodactyl = {
     "scope": "openid email profile riot://riot.atlas/accounts.edit riot://riot.atlas/accounts/password.edit riot://riot.atlas/accounts/email.edit riot://riot.atlas/accounts.auth riot://third_party.revoke riot://third_party.query riot://forgetme/notify.write riot://riot.authenticator/auth.code riot://riot.authenticator/authz.edit riot://rso/mfa/device.write riot://riot.authenticator/identity.add",
@@ -79,52 +79,32 @@ async def post_change_password(
 async def change_password(
     username, password, new_password, proxy=None, proxy_user=None, proxy_pass=None
 ):
-    try:
-        async with ClientSession() as session:
-            logger.info("Parsing authorization code...")
-            if not await parsing_auth_code(
-                session, accountodactyl, proxy, proxy_user, proxy_pass
-            ):
-                logger.info("Failed.")
-                return False
-            logger.info("Success.")
+    async with ClientSession() as session:
+        proxy_auth = get_basic_auth(proxy_user, proxy_pass)
+        if not await parsing_auth_code(
+            session, accountodactyl, proxy, proxy_user, proxy_pass
+        ):
+            return False
+        data = await rso_authorize(session, username, password, proxy, proxy_auth)
+        url = data["response"]["parameters"]["uri"]
+        if url is None:
+            return False
 
-            logger.info("Authorizing...")
-            url = await rso_auth(
-                session, username, password, proxy, proxy_user, proxy_pass
-            )
-            if url is None:
-                logger.info("Failed.")
-                return False
-            logger.info("Success.")
+        if not await redirect(session, url, proxy, proxy_user, proxy_pass):
+            return False
 
-            logger.info("Oauth redirecting...")
-            if not await redirect(session, url, proxy, proxy_user, proxy_pass):
-                logger.info("Failed.")
-                return False
-            logger.info("Success.")
+        csrf_token = await get_csrf_token(session, proxy, proxy_user, proxy_pass)
+        if csrf_token is None:
+            return False
 
-            logger.info("Parsing csrf-token...")
-            csrf_token = await get_csrf_token(session, proxy, proxy_user, proxy_pass)
-            if csrf_token is None:
-                logger.info("Failed.")
-                return False
-            logger.info("Success.")
-
-            logger.info("Changing password...")
-            if not await post_change_password(
-                session,
-                csrf_token,
-                password,
-                new_password,
-                proxy,
-                proxy_user,
-                proxy_pass,
-            ):
-                logger.info("Failed.")
-                return False
-            logger.info("Success.")
-            return True
-    except Exception as exp:
-        logger.error(f"Got exception type: {exp.__class__.__name__}")
-        return False
+        if not await post_change_password(
+            session,
+            csrf_token,
+            password,
+            new_password,
+            proxy,
+            proxy_user,
+            proxy_pass,
+        ):
+            return False
+        return True

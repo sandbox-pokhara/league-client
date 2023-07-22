@@ -9,7 +9,7 @@ from league_client.exceptions import RSOAuthorizeError
 from league_client.rso_auth import parse_auth_code
 
 from .logger import logger
-from .rso import HEADERS
+from .rso_auth import rso_authorize
 
 
 def _parse_access_token_regex(data):
@@ -63,63 +63,6 @@ def parse_info_from_access_token(access_token):
     except (ValueError, KeyError, IndexError, TypeError) as e:
         logger.exception("Failed to parse info from access token")
         raise ParseError("Failed to parse info from access token") from e
-
-
-async def parse_auth_access_token(
-    session, username, password, proxy=None, proxy_auth=None
-):
-    """Parse access token from authorization credentials
-
-    Args:
-        session (league_client.rso.ClentSession): aiohttp session
-        username (str): account username
-        username (str): account password
-        proxy (str, optional): proxy url
-        proxy_auth (BasicAuth, optional): proxy auth(username, password)
-
-    Raises:
-        RSOAuthorizeError: ACCESS_TOKEN - Failed to get access token
-        RSOAuthorizeError: MULTIFACTOR - Account has multifactor auth enabled
-        RSOAuthorizeError: WRONG_PASSWORD - Password is incorrect
-        RSOAuthorizeError: RATE_LIMITED - Rate limited by RSO, use proxy
-
-        ParseError
-
-    Returns:
-        str: access_token
-    """
-    data = {
-        "type": "auth",
-        "username": username,
-        "password": password,
-        "remember": True,
-    }
-    try:
-        async with session.put(
-            "https://auth.riotgames.com/api/v1/authorization",
-            proxy=proxy,
-            proxy_auth=proxy_auth,
-            json=data,
-            headers=HEADERS,
-        ) as res:
-            if not res.ok:
-                logger.debug(res.status)
-                raise RSOAuthorizeError("Failed to get access token", "ACCESS_TOKEN")
-            data = await res.json()
-            response_type = data["type"]
-            if response_type == "response":
-                access_token = _parse_access_token_regex(data)
-                return access_token
-            elif response_type == "multifactor":
-                raise RSOAuthorizeError("Multifactor authentication", "MULTIFACTOR")
-            elif response_type == "auth" and data["error"] == "auth_failure":
-                raise RSOAuthorizeError("Wrong password", "WRONG_PASSWORD")
-            elif response_type == "auth" and data["error"] == "rate_limited":
-                raise RSOAuthorizeError("Rate limited", "RATE_LIMITED")
-            raise RSOAuthorizeError(f"Got response type: {response_type}", "UNKNOWN")
-    except (aiohttp.ClientError, ValueError, KeyError) as e:
-        logger.exception("Failed to parse access token")
-        raise ParseError("Failed to parse access token", "UNKNOWN") from e
 
 
 async def parse_entitlements_token(session, access_token, proxy=None, proxy_auth=None):
@@ -200,9 +143,8 @@ async def get_tokens(
     """
     access_token = entitlements_token = None
     await parse_auth_code(session, client_id, scope, proxy, proxy_auth)
-    access_token = await parse_auth_access_token(
-        session, username, password, proxy, proxy_auth
-    )
+    data = await rso_authorize(session, username, password, proxy, proxy_auth)
+    access_token = _parse_access_token_regex(data)
     if entitlement:
         entitlements_token = await parse_entitlements_token(
             session, access_token, proxy, proxy_auth
