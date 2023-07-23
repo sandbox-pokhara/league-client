@@ -2,6 +2,7 @@ import aiohttp
 
 from league_client.exceptions import ParseError
 from league_client.exceptions import RSOAuthorizeError
+from league_client.exceptions import SummonerNotFoundError
 from league_client.utils import get_internal_region_by_tag
 
 from .logger import logger
@@ -58,6 +59,10 @@ async def parse_userinfo(
                 raise RSOAuthorizeError("Failed to get userinfo", "USERINFO")
             if not parse_token:
                 userinfo = await res.json()
+                if userinfo["lol_account"] is None:
+                    raise SummonerNotFoundError(
+                        "The account does not have a summoner", "NO_SUMMONER"
+                    )
                 info_res = {
                     "country": userinfo["country"],
                     "sub": userinfo["sub"],

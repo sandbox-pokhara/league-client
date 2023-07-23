@@ -17,6 +17,10 @@ class LeagueClientError(Exception):
         super().__init__(message)
 
 
+class SummonerNotFoundError(LeagueClientError):
+    """Raised when an account does not have summoner (level 1 account with no summoner name)."""
+
+
 class ParseError(LeagueClientError):
     """Raised when an error occurs during parsing process."""
 
