@@ -9,6 +9,12 @@ from league_client.rso_userinfo import parse_userinfo
 
 from .logger import logger
 
+# TODO: KR, PBE is not supported yet
+# TW2 region has 403 issues
+
+# example: euc1-green.pp.sgp.pvp.net
+# can be found in C:\Riot Games\League of Legends\system.yaml
+# in player_platform_edge_url field
 PLAYER_PLATFORM_MAPPING = {
     "EUW1": "euc1",
     "EUN1": "euc1",
@@ -21,8 +27,15 @@ PLAYER_PLATFORM_MAPPING = {
     "BR1": "usw2",
     "JP1": "apne1",
     "SG2": "apse1",
+    "PH2": "apse1",
+    "VN2": "apse1",
+    "TW2": "apse1",
+    "TH2": "apse1",
 }
 
+# example: br-red.lol.sgp.pvp.net
+# can be found in C:\Riot Games\League of Legends\system.yaml
+# in league_edge_url field
 LEDGE_URL_MAPPING = {
     "BR1": "br",
     "EUN1": "eune",
@@ -34,8 +47,15 @@ LEDGE_URL_MAPPING = {
     "OC1": "oce",
     "RU": "ru",
     "TR1": "tr",
+    "SG2": "sg2",
+    "PH2": "ph2",
+    "VN2": "vn2",
+    "TW2": "tw2",
+    "TH2": "th2",
 }
 
+# can be found in C:\Riot Games\League of Legends\system.yaml
+# in discoverous_service_location field
 LOCATION_PARAMETERS = {
     "BR1": "lolriot.mia1.br1",
     "EUN1": "lolriot.euc1.eun1",
@@ -47,6 +67,11 @@ LOCATION_PARAMETERS = {
     "OC1": "lolriot.pdx1.oc1",
     "RU": "lolriot.euc1.ru",
     "TR1": "lolriot.euc1.tr1",
+    "SG2": "lolriot.aws-apse1-prod.sg2",
+    "PH2": "lolriot.aws-apse1-prod.ph2",
+    "VN2": "lolriot.aws-apse1-prod.vn2",
+    "TW2": "lolriot.aws-apse1-prod.tw2",
+    "TH2": "lolriot.aws-apse1-prod.th2",
 }
 
 
