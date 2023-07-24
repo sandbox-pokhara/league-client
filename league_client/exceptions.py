@@ -17,6 +17,12 @@ class LeagueClientError(Exception):
         super().__init__(message)
 
 
+class RegionNotSupportedError(LeagueClientError):
+    def __init__(self, message, code, region):
+        self.region = region
+        super().__init__(message, code)
+
+
 class SummonerNotFoundError(LeagueClientError):
     """Raised when an account does not have summoner (level 1 account with no summoner name)."""
 

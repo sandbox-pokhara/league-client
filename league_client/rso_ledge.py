@@ -5,58 +5,58 @@ import aiohttp
 from league_client.exceptions import LeagueEdgeBadResponse
 from league_client.exceptions import LeagueEdgeError
 from league_client.exceptions import ParseError
+from league_client.exceptions import RegionNotSupportedError
 from league_client.rso_userinfo import parse_userinfo
 
 from .logger import logger
 
-# TODO: KR, PBE is not supported yet
-# TW2 region has 403 issues
+# TODO: KR, PBE, TW2 is not supported yet
 
 # example: euc1-green.pp.sgp.pvp.net
 # can be found in C:\Riot Games\League of Legends\system.yaml
 # in player_platform_edge_url field
-PLAYER_PLATFORM_MAPPING = {
-    "EUW1": "euc1",
-    "EUN1": "euc1",
-    "NA1": "usw2",
-    "LA1": "usw2",
-    "LA2": "usw2",
-    "TR1": "euc1",
-    "RU": "euc1",
-    "OC1": "apse1",
-    "BR1": "usw2",
-    "JP1": "apne1",
-    "SG2": "apse1",
-    "PH2": "apse1",
-    "VN2": "apse1",
-    "TW2": "apse1",
-    "TH2": "apse1",
+PLAYER_PLATFORM_EDGE_URL = {
+    "EUW1": "https://euc1-green.pp.sgp.pvp.net",
+    "EUN1": "https://euc1-green.pp.sgp.pvp.net",
+    "NA1": "https://usw2-green.pp.sgp.pvp.net",
+    "LA1": "https://usw2-green.pp.sgp.pvp.net",
+    "LA2": "https://usw2-green.pp.sgp.pvp.net",
+    "TR1": "https://euc1-green.pp.sgp.pvp.net",
+    "RU": "https://euc1-green.pp.sgp.pvp.net",
+    "OC1": "https://apse1-green.pp.sgp.pvp.net",
+    "BR1": "https://usw2-green.pp.sgp.pvp.net",
+    "JP1": "https://apne1-green.pp.sgp.pvp.net",
+    "SG2": "https://apse1-green.pp.sgp.pvp.net",
+    "PH2": "https://apse1-green.pp.sgp.pvp.net",
+    "VN2": "https://apse1-green.pp.sgp.pvp.net",
+    # "TW2": "https://apse1-green.pp.sgp.pvp.net", correct value but 403 issues
+    "TH2": "https://apse1-green.pp.sgp.pvp.net",
 }
 
 # example: br-red.lol.sgp.pvp.net
 # can be found in C:\Riot Games\League of Legends\system.yaml
 # in league_edge_url field
-LEDGE_URL_MAPPING = {
-    "BR1": "br",
-    "EUN1": "eune",
-    "EUW1": "euw",
-    "JP1": "jp",
-    "LA1": "lan",
-    "LA2": "las",
-    "NA1": "na",
-    "OC1": "oce",
-    "RU": "ru",
-    "TR1": "tr",
-    "SG2": "sg2",
-    "PH2": "ph2",
-    "VN2": "vn2",
-    "TW2": "tw2",
-    "TH2": "th2",
+LEAGUE_EDGE_URL = {
+    "BR1": "https://br-red.lol.sgp.pvp.net",
+    "EUN1": "https://eune-red.lol.sgp.pvp.net",
+    "EUW1": "https://euw-red.lol.sgp.pvp.net",
+    "JP1": "https://jp-red.lol.sgp.pvp.net",
+    "LA1": "https://lan-red.lol.sgp.pvp.net",
+    "LA2": "https://las-red.lol.sgp.pvp.net",
+    "NA1": "https://na-red.lol.sgp.pvp.net",
+    "OC1": "https://oce-red.lol.sgp.pvp.net",
+    "RU": "https://ru-red.lol.sgp.pvp.net",
+    "TR1": "https://tr-red.lol.sgp.pvp.net",
+    "SG2": "https://sg2-red.lol.sgp.pvp.net",
+    "PH2": "https://ph2-red.lol.sgp.pvp.net",
+    "VN2": "https://vn2-red.lol.sgp.pvp.net",
+    # "TW2": "https://tw2-red.lol.sgp.pvp.net", correct value but 403 issues
+    "TH2": "https://th2-red.lol.sgp.pvp.net",
 }
 
 # can be found in C:\Riot Games\League of Legends\system.yaml
 # in discoverous_service_location field
-LOCATION_PARAMETERS = {
+DISCOVEROUS_SERVICE_LOCATION = {
     "BR1": "lolriot.mia1.br1",
     "EUN1": "lolriot.euc1.eun1",
     "EUW1": "lolriot.ams1.euw1",
@@ -70,9 +70,36 @@ LOCATION_PARAMETERS = {
     "SG2": "lolriot.aws-apse1-prod.sg2",
     "PH2": "lolriot.aws-apse1-prod.ph2",
     "VN2": "lolriot.aws-apse1-prod.vn2",
-    "TW2": "lolriot.aws-apse1-prod.tw2",
+    # "TW2": "lolriot.aws-apse1-prod.tw2", correct value but 403 issues
     "TH2": "lolriot.aws-apse1-prod.th2",
 }
+
+
+def get_player_platform_edge_url(region):
+    try:
+        return PLAYER_PLATFORM_EDGE_URL[region]
+    except KeyError:
+        raise RegionNotSupportedError(
+            f"Region {region} is not supported", "REGION_NOT_SUPPORTED", region
+        )
+
+
+def get_league_edge_url(region):
+    try:
+        return LEAGUE_EDGE_URL[region]
+    except KeyError:
+        raise RegionNotSupportedError(
+            f"Region {region} is not supported", "REGION_NOT_SUPPORTED", region
+        )
+
+
+def get_discoverous_service_location(region):
+    try:
+        return DISCOVEROUS_SERVICE_LOCATION[region]
+    except KeyError:
+        raise RegionNotSupportedError(
+            f"Region {region} is not supported", "REGION_NOT_SUPPORTED", region
+        )
 
 
 async def create_login_queue(
@@ -96,7 +123,7 @@ async def create_login_queue(
         str: login queue token
     """
     try:
-        pp_url = f"https://{PLAYER_PLATFORM_MAPPING[region]}-green.pp.sgp.pvp.net"
+        pp_url = get_player_platform_edge_url(region)
         data = {
             "clientName": "lcu",
             "entitlements": tokens["entitlements_token"],
@@ -145,7 +172,7 @@ async def create_login_session(
         str: league edge token
     """
     try:
-        pp_url = f"https://{PLAYER_PLATFORM_MAPPING[region]}-green.pp.sgp.pvp.net"
+        pp_url = get_player_platform_edge_url(region)
         data = {
             "claims": {"cname": "lcu"},
             "product": "lol",
@@ -237,7 +264,9 @@ async def get_owned_skins(
         region = account_info["region"]
         puuid = account_info["puuid"]
         account_id = account_info["account_id"]
-        url = f"https://{LEDGE_URL_MAPPING[region]}-red.lol.sgp.pvp.net/lolinventoryservice-ledge/v1/inventories/simple?puuid={puuid}&location={LOCATION_PARAMETERS[region]}&accountId={account_id}&inventoryTypes=CHAMPION_SKIN"
+        url = get_league_edge_url(region)
+        location = get_discoverous_service_location(region)
+        url += f"/lolinventoryservice-ledge/v1/inventories/simple?puuid={puuid}&location={location}&accountId={account_id}&inventoryTypes=CHAMPION_SKIN"
         headers = {
             "Authorization": f"Bearer {ledge_token}",
         }
@@ -277,7 +306,11 @@ async def get_loot(session, account_info, ledge_token, proxy=None, proxy_auth=No
     try:
         region = account_info["region"]
         summoner_id = account_info["summoner_id"]
-        url = f"https://{LEDGE_URL_MAPPING[region]}-red.lol.sgp.pvp.net/loot/v1/playerlootdefinitions/location/{LOCATION_PARAMETERS[region]}/playerId/{summoner_id}"
+        url = get_league_edge_url(region)
+        location = get_discoverous_service_location(region)
+        url += (
+            f"/loot/v1/playerlootdefinitions/location/{location}/playerId/{summoner_id}"
+        )
         headers = {
             "Authorization": f"Bearer {ledge_token}",
         }
@@ -351,7 +384,8 @@ async def get_honor_level(
     """
     try:
         region = account_info["region"]
-        url = f"https://{LEDGE_URL_MAPPING[region]}-red.lol.sgp.pvp.net/honor-edge/v2/retrieveProfileInfo/"
+        url = get_league_edge_url(region)
+        url += f"/honor-edge/v2/retrieveProfileInfo/"
         headers = {
             "Authorization": f"Bearer {ledge_token}",
         }
@@ -391,7 +425,8 @@ async def get_rank_info(
     try:
         region = account_info["region"]
         puuid = account_info["puuid"]
-        url = f"https://{LEDGE_URL_MAPPING[region]}-red.lol.sgp.pvp.net/leagues-ledge/v2/rankedStats/puuid/{puuid}"
+        url = get_league_edge_url(region)
+        url += f"/leagues-ledge/v2/rankedStats/puuid/{puuid}"
         headers = {
             "Authorization": f"Bearer {ledge_token}",
         }
