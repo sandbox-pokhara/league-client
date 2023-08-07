@@ -39,7 +39,7 @@ async def get_csrf_token(session, proxy, proxy_user=None, proxy_pass=None):
         if not res.ok:
             return None
         text = await res.text()
-        pattern = "<meta name='csrf-token' content='(.{36})' />"
+        pattern = "<meta name=['\"]csrf-token['\"] content=['\"](.{36})['\"] />"
         match = re.search(pattern, text)
         if match is None:
             return None
