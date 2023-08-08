@@ -3,6 +3,7 @@ import aiohttp
 from league_client.exceptions import ParseError
 from league_client.exceptions import RSOAuthorizeError
 from league_client.exceptions import SummonerNotFoundError
+from league_client.utils import get_internal_region_by_platform
 from league_client.utils import get_internal_region_by_tag
 
 from .logger import logger
@@ -60,9 +61,14 @@ async def parse_userinfo(
             if not parse_token:
                 userinfo = await res.json()
                 if userinfo["lol_account"] is None:
+                    internal_region = userinfo["original_platform_id"]
+                    internal_region = get_internal_region_by_platform(internal_region)
                     raise SummonerNotFoundError(
-                        "The account does not have a summoner", "NO_SUMMONER"
+                        "The account does not have a summoner",
+                        "NO_SUMMONER",
+                        internal_region,
                     )
+                internal_region = get_internal_region_by_tag(userinfo["region"]["tag"])
                 info_res = {
                     "country": userinfo["country"],
                     "sub": userinfo["sub"],
@@ -75,9 +81,7 @@ async def parse_userinfo(
                     "username": userinfo["username"],
                     "ban_stats": userinfo["ban"],
                     "region": userinfo["region"]["tag"],
-                    "internal_region": get_internal_region_by_tag(
-                        userinfo["region"]["tag"]
-                    ),
+                    "internal_region": internal_region,
                     "game_name": userinfo["acct"]["game_name"],
                 }
             else:

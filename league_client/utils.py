@@ -65,3 +65,39 @@ def get_internal_region_by_tag(region):
     elif region_u == "OC":
         return "OC1"
     return region_u
+
+
+def get_internal_region_by_platform(region):
+    if region == "BR1":
+        return "BR"
+    if region == "EUN1":
+        return "EUNE"
+    if region == "EUW1":
+        return "EUW"
+    if region == "JP1":
+        return "JP"
+    if region == "KR":
+        return "KR"
+    if region == "LA1":
+        return "LA1"
+    if region == "LA2":
+        return "LA2"
+    if region == "NA1":
+        return "NA"
+    if region == "OC1":
+        return "OC1"
+    if region == "TR1":
+        return "TR"
+    if region == "RU":
+        return "RU"
+    if region == "PH2":
+        return "PH2"
+    if region == "SG2":
+        return "SG2"
+    if region == "TH2":
+        return "TH2"
+    if region == "TW2":
+        return "TW2"
+    if region == "VN2":
+        return "VN2"
+    return region

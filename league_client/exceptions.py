@@ -26,6 +26,12 @@ class RegionNotSupportedError(LeagueClientError):
 class SummonerNotFoundError(LeagueClientError):
     """Raised when an account does not have summoner (level 1 account with no summoner name)."""
 
+    def __init__(self, message, code, region):
+        # can be used as fresh accounts
+        # so region data is required
+        self.region = region
+        super().__init__(message, code)
+
 
 class ParseError(LeagueClientError):
     """Raised when an error occurs during parsing process."""
