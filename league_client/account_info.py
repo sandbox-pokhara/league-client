@@ -1,20 +1,28 @@
+import asyncio
+
 import aiohttp
 
 from league_client.exceptions import AccountBannedError
 from league_client.exceptions import AccountRestrictedError
 from league_client.exceptions import ChatRestrictedError
+from league_client.exceptions import ConnectedAccountsError
+from league_client.exceptions import RiotUserInfoError
 from league_client.exceptions import TimeBanError
+from league_client.riot_userinfo import get_riot_userinfo
 from league_client.rso import get_basic_auth
 from league_client.rso_ledge import get_honor_level
 from league_client.rso_ledge import get_loot
+from league_client.rso_ledge import get_match_history
 from league_client.rso_ledge import get_owned_skins
 from league_client.rso_ledge import get_rank_info
 from league_client.rso_ledge import parse_ledge_token
 from league_client.rso_tokens import get_tokens
 from league_client.rso_tokens import parse_info_from_access_token
 from league_client.rso_userinfo import parse_userinfo
+from league_client.utils import parse_flash_key
 
 
+# use get_account_details() instead
 async def get_account_info(
     username,
     password,
@@ -160,3 +168,215 @@ async def get_account_info(
         "honor_info": honor_level_res,
         "rank_info": rank_info_res,
     }
+
+
+async def get_account_details(
+    username,
+    password,
+    skins=True,
+    essence=True,
+    rank=True,
+    honor=True,
+    match_history=True,
+    flash_key=True,
+    connected_accounts=True,
+    proxy=None,
+    proxy_user=None,
+    proxy_pass=None,
+):
+    """
+    Args:
+        skins (bool, optional): get skins data. Defaults to True.
+        essence (bool, optional): get essence data. Defaults to True.
+        rank (bool, optional): get rank data. Defaults to True.
+        honor (bool, optional): get honor data. Defaults to True.
+        match_history (bool, optional): get match history. Defaults to True.
+        flash_key (bool, optional): get flash key. Defaults to True.
+        connected_accounts (bool, optional): if True, raises ConnectedAccountsError if account has connected accounts(Google, Xbox...)
+                                        if False, ignores connected accounts. Only for accounts testing.
+                                        Defaults to True as xbox can be used to login without password.
+
+    Raises:
+        AccountBannedError: permanent ban
+        ChatRestrictedError
+        TimeBanError
+        AccountRestrictedError
+        Base: LeagueClientError
+
+    Returns:
+        {
+         'account_info': {'account_id': 7777722222200000,
+                  'puuid': 'ffffffff-5555-5555-bbbb-999999999999',
+                  'region': 'EUW1',
+                  'summoner_id': 7777722222200000},
+         'essence': {'blue_essence': 20000,
+                     'mythic_essence': 10,
+                     'orange_essence': 500},
+         'flash_key': None,
+         'honor_level': {'checkpoint': 0, 'honorLevel': 2, 'rewardsLocked': False},
+         'rank': {'division': None,
+                  'losses': 0,
+                  'queue': 'RANKED_SOLO_5x5',
+                  'tier': 'UNRANKED',
+                  'wins': 0},
+         'skins': {'normal_skins': [22007, 4005, 497018],
+                   'owned_skins': [],
+                   'permanent_skins': [58003]},
+         'user_info': {'ban_stats': {'restrictions': []},
+                       'country': 'usa',
+                       'email_verified': False,
+                       'game_name': 'name',
+                       'internal_region': 'EUW',
+                       'password_changed_at': 1644830696000,
+                       'phone_number_verified': False,
+                       'region': 'euw',
+                       'sub': 'ffffffff-5555-5555-bbbb-999999999999',
+                       'summoner_id': 7777722222200000,
+                       'summoner_level': 32,
+                       'summoner_name': 'name',
+                       'username': 'uname'}
+        }
+    """
+    return_data = {}
+    proxy_auth = get_basic_auth(proxy_user, proxy_pass)
+    async with aiohttp.ClientSession() as session:
+        tokens = await get_tokens(
+            session,
+            username,
+            password,
+            proxy,
+            proxy_auth,
+            client_id="riot-client",
+        )
+        userinfo = await parse_userinfo(
+            session,
+            tokens["access_token"],
+            proxy,
+            proxy_auth,
+            parse_token=False,
+        )
+        return_data["user_info"] = userinfo.get("info")
+    restrictions = userinfo["info"]["ban_stats"]["restrictions"]
+    restrictions = [r["type"] for r in restrictions]
+    if "PERMANENT_BAN" in restrictions:
+        raise AccountBannedError("Account is banned.", code="ACCOUNT_BANNED")
+    if connected_accounts:
+        acc_data = await get_riot_userinfo(
+            username, password, proxy, proxy_user, proxy_pass
+        )
+        # early raise if riot userinfo cannot be fetched
+        if acc_data is None:
+            raise RiotUserInfoError(
+                "Failed to get riot userinfo.", code="RIOT_USERINFO"
+            )
+        federated_identities = acc_data.get("federated_identities")
+        if federated_identities:
+            raise ConnectedAccountsError(
+                f"{federated_identities}", code="CONNECTED_ACCOUNTS"
+            )
+    summoner_id = userinfo.get("info", {}).get("summoner_id", None)
+    if (
+        ((skins or essence) and summoner_id)
+        or rank
+        or honor
+        or match_history
+        or flash_key
+    ):
+        # if the account has some kind of restriction,
+        # parse_ledge_token fails, therefore these exceptions must be rasied
+        if restrictions != []:
+            if "TEXT_CHAT_RESTRICTION" in restrictions:
+                raise ChatRestrictedError(
+                    "Account has chat restriction.", code="CHAT_RESTRICTED"
+                )
+            if "TIME_BAN" in restrictions:
+                raise TimeBanError("Account has time ban restriction.", code="TIME_BAN")
+            raise AccountRestrictedError(
+                "Account has one or more restrictions.", code="ACCOUNT_RESTRICTED"
+            )
+        async with aiohttp.ClientSession() as session:
+            tokens = await get_tokens(
+                session,
+                username,
+                password,
+                proxy,
+                proxy_auth,
+                client_id="lol",
+                entitlement=True,
+            )
+            account_info = parse_info_from_access_token(tokens["access_token"])
+            account_info["summoner_id"] = summoner_id
+            return_data["account_info"] = account_info
+            ledge_token = await parse_ledge_token(
+                session, account_info, tokens, proxy, proxy_auth
+            )
+            tasks = []
+            if skins:
+                tasks.append(
+                    get_owned_skins(
+                        session,
+                        account_info,
+                        ledge_token,
+                    )
+                )
+            if essence or skins:
+                tasks.append(
+                    get_loot(
+                        session,
+                        account_info,
+                        ledge_token,
+                    )
+                )
+            if honor:
+                tasks.append(
+                    get_honor_level(
+                        session,
+                        account_info,
+                        ledge_token,
+                    )
+                )
+            if rank:
+                tasks.append(
+                    get_rank_info(
+                        session,
+                        account_info,
+                        ledge_token,
+                    )
+                )
+            if match_history or flash_key:
+                tasks.append(
+                    get_match_history(
+                        session,
+                        tokens["access_token"],
+                        account_info["region"],
+                        account_info["puuid"],
+                    )
+                )
+            (
+                owned_skins_data,
+                loot_data,
+                honor_level_data,
+                rank_data,
+                match_history_data,
+            ) = await asyncio.gather(*tasks)
+            return_data["flash_key"] = parse_flash_key(match_history_data, summoner_id)
+            return_data["honor_level"] = honor_level_data
+            return_data["rank"] = rank_data
+            if skins:
+                normal_skins_data = loot_data["normal_skins"]
+                permanent_skins_data = loot_data["permanent_skins"]
+                return_data["skins"] = {
+                    "owned_skins": owned_skins_data,
+                    "normal_skins": normal_skins_data,
+                    "permanent_skins": permanent_skins_data,
+                }
+            if essence:
+                blue_essence_data = loot_data["blue_essence"]
+                orange_essence_data = loot_data["orange_essence"]
+                mythic_essence_data = loot_data["mythic_essence"]
+                return_data["essence"] = {
+                    "blue_essence": blue_essence_data,
+                    "orange_essence": orange_essence_data,
+                    "mythic_essence": mythic_essence_data,
+                }
+            return return_data

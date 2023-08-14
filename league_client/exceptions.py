@@ -78,3 +78,11 @@ class ChatRestrictedError(AccountRestrictedError):
 
 class TimeBanError(AccountRestrictedError):
     """Raised when an account has TIME_BAN restriction"""
+
+
+class ConnectedAccountsError(LeagueClientError):
+    """Raised when an account has other connected accounts"""
+
+
+class RiotUserInfoError(LeagueClientError):
+    """Raised when an error occurs during GET riot user info."""
