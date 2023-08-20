@@ -455,3 +455,22 @@ async def get_rank_info(
     except (aiohttp.ClientError, ValueError, KeyError, IndexError) as e:
         logger.exception("Failed to get rank info")
         raise ParseError("Failed to get rank info", "UNKNOWN") from e
+
+
+async def get_match_history(
+    session, access_token, region, puuid, proxy=None, proxy_auth=None
+):
+    session.headers.update(
+        {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {access_token}",
+        }
+    )
+    url = get_player_platform_edge_url(region)
+    url += f"/match-history-query/v1/products/lol/player/{puuid}/SUMMARY?startIndex=0&count=30"
+    async with session.get(url) as res:
+        if not res.ok:
+            raise await LeagueEdgeBadResponse.create(
+                "Failed to parse match history", "MATCH_HISTORY", res
+            )
+        return await res.json()

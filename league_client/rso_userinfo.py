@@ -1,8 +1,12 @@
+from copy import copy
+
 import aiohttp
 
 from league_client.exceptions import ParseError
 from league_client.exceptions import RSOAuthorizeError
 from league_client.exceptions import SummonerNotFoundError
+from league_client.rso import HEADERS
+from league_client.rso import get_basic_auth
 from league_client.utils import get_internal_region_by_platform
 from league_client.utils import get_internal_region_by_tag
 
@@ -90,3 +94,34 @@ async def parse_userinfo(
     except (aiohttp.ClientError, ValueError, KeyError, TypeError) as e:
         logger.exception("Failed to parse userinfo")
         raise ParseError("Failed to parse userinfo", "UNKNOWN") from e
+
+
+async def parse_accountinfo(
+    session, csrf_token, proxy=None, proxy_user=None, proxy_pass=None
+):
+    """Get account info from Riot website
+
+    Returns:
+        {'sub': 'ffffffff-5555-5555-bbbb-999999999999',
+        'email': 'Exa*******@gm***.com',
+        'region': 'EUW1', 'locale': 'en',
+        'username': 'Te******er', 'mfa': {'verified': True},
+        'country': 'usa', 'email_status': 'not_validated',
+        'federated_identities': ['xbox'],
+        'birth_date': '2000-**-**'}
+    """
+    headers = copy(HEADERS)
+    headers["csrf-token"] = csrf_token
+    headers["referer"] = "https://account.riotgames.com/"
+    async with session.get(
+        "https://account.riotgames.com/api/account/v1/user",
+        proxy=proxy,
+        proxy_auth=get_basic_auth(proxy_user, proxy_pass),
+        json={},
+        headers=headers,
+    ) as res:
+        if not res.ok:
+            logger.debug(res.status)
+            logger.debug(await res.text())
+            return None
+        return await res.json()

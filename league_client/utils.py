@@ -101,3 +101,19 @@ def get_internal_region_by_platform(region):
     if region == "VN2":
         return "VN2"
     return region
+
+
+def parse_flash_key(match_data, summoner_id):
+    """
+    Returns: flash key ('D' or 'F') if found, else None
+    """
+    try:
+        for players in match_data["games"][0]["json"]["participants"]:
+            if players["summonerId"] == summoner_id:
+                if players["spell1Id"] == 4:
+                    return "D"
+                elif players["spell2Id"] == 4:
+                    return "F"
+        return None
+    except Exception:
+        return None
