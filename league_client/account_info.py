@@ -97,9 +97,12 @@ async def get_account_info(
                     "Account has chat restriction.", code="CHAT_RESTRICTED"
                 )
             if "TIME_BAN" in restrictions:
-                raise TimeBanError("Account has time ban restriction.", code="TIME_BAN")
+                raise TimeBanError(
+                    "Account has time ban restriction.", code="TIME_BAN"
+                )
             raise AccountRestrictedError(
-                "Account has one or more restrictions.", code="ACCOUNT_RESTRICTED"
+                "Account has one or more restrictions.",
+                code="ACCOUNT_RESTRICTED",
             )
         async with aiohttp.ClientSession() as session:
             tokens = await get_tokens(
@@ -168,6 +171,10 @@ async def get_account_info(
         "honor_info": honor_level_res,
         "rank_info": rank_info_res,
     }
+
+
+async def fake_task(default=None):
+    return default
 
 
 async def get_account_details(
@@ -290,9 +297,12 @@ async def get_account_details(
                     "Account has chat restriction.", code="CHAT_RESTRICTED"
                 )
             if "TIME_BAN" in restrictions:
-                raise TimeBanError("Account has time ban restriction.", code="TIME_BAN")
+                raise TimeBanError(
+                    "Account has time ban restriction.", code="TIME_BAN"
+                )
             raise AccountRestrictedError(
-                "Account has one or more restrictions.", code="ACCOUNT_RESTRICTED"
+                "Account has one or more restrictions.",
+                code="ACCOUNT_RESTRICTED",
             )
         async with aiohttp.ClientSession() as session:
             tokens = await get_tokens(
@@ -311,47 +321,52 @@ async def get_account_details(
                 session, account_info, tokens, proxy, proxy_auth
             )
             tasks = []
-            if skins:
-                tasks.append(
-                    get_owned_skins(
-                        session,
-                        account_info,
-                        ledge_token,
-                    )
+            tasks.append(
+                get_owned_skins(
+                    session,
+                    account_info,
+                    ledge_token,
                 )
-            if essence or skins:
-                tasks.append(
-                    get_loot(
-                        session,
-                        account_info,
-                        ledge_token,
-                    )
+                if skins
+                else fake_task()
+            )
+            tasks.append(
+                get_loot(
+                    session,
+                    account_info,
+                    ledge_token,
                 )
-            if honor:
-                tasks.append(
-                    get_honor_level(
-                        session,
-                        account_info,
-                        ledge_token,
-                    )
+                if essence or skins
+                else fake_task()
+            )
+            tasks.append(
+                get_honor_level(
+                    session,
+                    account_info,
+                    ledge_token,
                 )
-            if rank:
-                tasks.append(
-                    get_rank_info(
-                        session,
-                        account_info,
-                        ledge_token,
-                    )
+                if honor
+                else fake_task()
+            )
+            tasks.append(
+                get_rank_info(
+                    session,
+                    account_info,
+                    ledge_token,
                 )
-            if match_history or flash_key:
-                tasks.append(
-                    get_match_history(
-                        session,
-                        tokens["access_token"],
-                        account_info["region"],
-                        account_info["puuid"],
-                    )
+                if rank
+                else fake_task()
+            )
+            tasks.append(
+                get_match_history(
+                    session,
+                    tokens["access_token"],
+                    account_info["region"],
+                    account_info["puuid"],
                 )
+                if match_history or flash_key
+                else fake_task()
+            )
             (
                 owned_skins_data,
                 loot_data,
@@ -359,7 +374,12 @@ async def get_account_details(
                 rank_data,
                 match_history_data,
             ) = await asyncio.gather(*tasks)
-            return_data["flash_key"] = parse_flash_key(match_history_data, summoner_id)
+            return_data["flash_key"] = parse_flash_key(
+                match_history_data, summoner_id
+            )
+            return_data["match_history"] = (
+                match_history_data if match_history else None
+            )
             return_data["honor_level"] = honor_level_data
             return_data["rank"] = rank_data
             if skins:
