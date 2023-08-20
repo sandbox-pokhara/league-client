@@ -282,41 +282,41 @@ async def get_account_details(
                 f"{federated_identities}", code="CONNECTED_ACCOUNTS"
             )
     summoner_id = userinfo.get("info", {}).get("summoner_id", None)
-    if (
-        ((skins or essence) and summoner_id)
-        or rank
-        or honor
-        or match_history
-        or flash_key
-    ):
-        # if the account has some kind of restriction,
-        # parse_ledge_token fails, therefore these exceptions must be rasied
-        if restrictions != []:
-            if "TEXT_CHAT_RESTRICTION" in restrictions:
-                raise ChatRestrictedError(
-                    "Account has chat restriction.", code="CHAT_RESTRICTED"
-                )
-            if "TIME_BAN" in restrictions:
-                raise TimeBanError(
-                    "Account has time ban restriction.", code="TIME_BAN"
-                )
-            raise AccountRestrictedError(
-                "Account has one or more restrictions.",
-                code="ACCOUNT_RESTRICTED",
+    # if the account has some kind of restriction,
+    # parse_ledge_token fails, therefore these exceptions must be rasied
+    if restrictions != []:
+        if "TEXT_CHAT_RESTRICTION" in restrictions:
+            raise ChatRestrictedError(
+                "Account has chat restriction.", code="CHAT_RESTRICTED"
             )
-        async with aiohttp.ClientSession() as session:
-            tokens = await get_tokens(
-                session,
-                username,
-                password,
-                proxy,
-                proxy_auth,
-                client_id="lol",
-                entitlement=True,
+        if "TIME_BAN" in restrictions:
+            raise TimeBanError(
+                "Account has time ban restriction.", code="TIME_BAN"
             )
-            account_info = parse_info_from_access_token(tokens["access_token"])
-            account_info["summoner_id"] = summoner_id
-            return_data["account_info"] = account_info
+        raise AccountRestrictedError(
+            "Account has one or more restrictions.",
+            code="ACCOUNT_RESTRICTED",
+        )
+    async with aiohttp.ClientSession() as session:
+        tokens = await get_tokens(
+            session,
+            username,
+            password,
+            proxy,
+            proxy_auth,
+            client_id="lol",
+            entitlement=True,
+        )
+        account_info = parse_info_from_access_token(tokens["access_token"])
+        account_info["summoner_id"] = summoner_id
+        return_data["account_info"] = account_info
+        if (
+            ((skins or essence) and summoner_id)
+            or rank
+            or honor
+            or match_history
+            or flash_key
+        ):
             ledge_token = await parse_ledge_token(
                 session, account_info, tokens, proxy, proxy_auth
             )
@@ -399,4 +399,4 @@ async def get_account_details(
                     "orange_essence": orange_essence_data,
                     "mythic_essence": mythic_essence_data,
                 }
-            return return_data
+    return return_data
