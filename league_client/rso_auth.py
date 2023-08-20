@@ -9,7 +9,9 @@ from .rso import get_basic_auth
 
 
 # ! to deprecate, current_version='1.0.16', Use parse_auth_code instead
-async def parsing_auth_code(session, params, proxy, proxy_user=None, proxy_pass=None):
+async def parsing_auth_code(
+    session, params, proxy, proxy_user=None, proxy_pass=None
+):
     async with session.get(
         "https://auth.riotgames.com/authorize",
         params=params,
@@ -23,7 +25,9 @@ async def parsing_auth_code(session, params, proxy, proxy_user=None, proxy_pass=
         return res.ok
 
 
-async def rso_authorize(session, username, password, proxy=None, proxy_auth=None):
+async def rso_authorize(
+    session, username, password, proxy=None, proxy_auth=None
+):
     """Parse access token from authorization credentials
 
     Args:
@@ -78,24 +82,32 @@ async def rso_authorize(session, username, password, proxy=None, proxy_auth=None
         ) as res:
             if not res.ok:
                 logger.debug(res.status)
-                raise RSOAuthorizeError("Failed to get access token", "ACCESS_TOKEN")
+                raise RSOAuthorizeError(
+                    "Failed to get access token", "ACCESS_TOKEN"
+                )
             data = await res.json()
             response_type = data["type"]
             if response_type == "response":
                 return data
             elif response_type == "multifactor":
-                raise RSOAuthorizeError("Multifactor authentication", "MULTIFACTOR")
+                raise RSOAuthorizeError(
+                    "Multifactor authentication", "MULTIFACTOR"
+                )
             elif response_type == "auth" and data["error"] == "auth_failure":
                 raise RSOAuthorizeError("Wrong password", "WRONG_PASSWORD")
             elif response_type == "auth" and data["error"] == "rate_limited":
                 raise RSOAuthorizeError("Rate limited", "RATE_LIMITED")
-            raise RSOAuthorizeError(f"Got response type: {response_type}", "UNKNOWN")
+            raise RSOAuthorizeError(
+                f"Got response type: {response_type}", "UNKNOWN"
+            )
     except (aiohttp.ClientError, ValueError, KeyError) as e:
         logger.exception("Failed to parse access token")
         raise ParseError("Failed to parse access token", "UNKNOWN") from e
 
 
-async def parse_auth_code(session, client_id, scope, proxy=None, proxy_auth=None):
+async def parse_auth_code(
+    session, client_id, scope, proxy=None, proxy_auth=None
+):
     """Get auth permit from RSO
 
     Args:
@@ -121,8 +133,8 @@ async def parse_auth_code(session, client_id, scope, proxy=None, proxy_auth=None
         "scope": scope,
     }
     try:
-        async with session.get(
-            "https://auth.riotgames.com/authorize",
+        async with session.post(
+            "https://auth.riotgames.com/api/v1/authorization",
             params=data,
             proxy=proxy,
             proxy_auth=proxy_auth,
@@ -130,7 +142,12 @@ async def parse_auth_code(session, client_id, scope, proxy=None, proxy_auth=None
         ) as res:
             if not res.ok:
                 logger.debug(res.status)
-                raise RSOAuthorizeError("Failed to get authorization code", "AUTH_CODE")
+                logger.debug(await res.text())
+                raise RSOAuthorizeError(
+                    "Failed to get authorization code", "AUTH_CODE"
+                )
     except aiohttp.ClientError as e:
         logger.exception("Failed to parse authorization code")
-        raise ParseError("Failed to parse authorization code", "UNKNOWN") from e
+        raise ParseError(
+            "Failed to parse authorization code", "UNKNOWN"
+        ) from e
