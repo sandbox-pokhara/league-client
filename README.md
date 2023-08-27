@@ -32,6 +32,8 @@ pip install league-client
 ...         riot_exe,
 ...         riot_lockfile,
 ...         league_lockfile,
+...         captcha_service,
+...         captcha_api_key,
 ...     )
 05/10/2022 12:18:09 PM - INFO - Logging in...
 05/10/2022 12:18:18 PM - INFO - Waiting for session...

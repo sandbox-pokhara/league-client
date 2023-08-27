@@ -1,12 +1,29 @@
+import asyncio
 import json
 import os
 import time
 
 import requests
 
+from league_client.constants import SITE_URL
+from league_client.constants import USER_AGENT
 from league_process.utils import is_running
 
 from .logger import logger
+
+
+def get_rq_data_and_site_key(connection):
+    connection.delete("/rso-authenticator/v1/authentication")
+    res = connection.post(
+        "/rso-authenticator/v1/authentication/riot-identity/start",
+        json={
+            "language": "en_GB",
+            "productId": "riot-client",
+            "state": "auth",
+        },
+    )
+    if res.ok:
+        return res.json()["captcha"]["hcaptcha"]
 
 
 def get_phases():
@@ -37,7 +54,10 @@ def get_is_age_restricted(connection):
         )
         response = response.json()
         return response.get("restricted", False)
-    except (json.decoder.JSONDecodeError, requests.exceptions.RequestException):
+    except (
+        json.decoder.JSONDecodeError,
+        requests.exceptions.RequestException,
+    ):
         return False
 
 
@@ -46,7 +66,10 @@ def get_is_country_region_missing(connection):
         response = connection.get("/riot-client-auth/v1/userinfo")
         response = response.json()
         return response.get("country", "npl") == "nan"
-    except (json.decoder.JSONDecodeError, requests.exceptions.RequestException):
+    except (
+        json.decoder.JSONDecodeError,
+        requests.exceptions.RequestException,
+    ):
         return False
 
 
@@ -60,7 +83,9 @@ def wait_until_patched(connection, timeout=7200):
         try:
             time.sleep(10)
             time_elapsed = time.time() - start_time
-            logger.info(f"Patching riot client. Time elapsed: {int(time_elapsed)}s.")
+            logger.info(
+                f"Patching riot client. Time elapsed: {int(time_elapsed)}s."
+            )
             if time_elapsed > timeout:
                 return False
             res = connection.get("/rnet-lifecycle/v1/product-context-phase")
@@ -71,8 +96,38 @@ def wait_until_patched(connection, timeout=7200):
             pass
 
 
-def authorize(connection, username, password):
+from ucaptcha import solver
+
+
+def get_captcha_token(connection, captcha_service, captch_api_key):
+    async def task():
+        rq_and_site_key_data = get_rq_data_and_site_key(connection)
+        site_key = rq_and_site_key_data["key"]
+        rq_data = rq_and_site_key_data["data"]
+        return await solver.solve_captcha(
+            captcha_service,
+            captch_api_key,
+            site_key,
+            SITE_URL,
+            USER_AGENT,
+            rq_data,
+        )
+
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    result = loop.run_until_complete(task())
+    return result
+
+
+def authorize(
+    connection,
+    username,
+    password,
+    captcha_service,
+    captcha_api_key,
+):
     authorized = get_is_authorized(connection)
+
     if authorized:
         if get_is_age_restricted(connection):
             return {"ok": False, "detail": "Age restricted."}
@@ -82,13 +137,53 @@ def authorize(connection, username, password):
     if authorized and get_is_agreement_required(connection):
         accept_agreement(connection)
         return {"ok": True, "logged_in": True}
+
+    captcha_token = None
+    if captcha_api_key is not None:
+        logger.info("Getting captcha token...")
+        captcha_token = get_captcha_token(
+            connection, captcha_service, captcha_api_key
+        )
+        if captcha_token is None:
+            return {"ok": True, "logged_in": False}
+
+    logger.info("Getting login token...")
+    data = {
+        "username": username,
+        "password": password,
+        "remember": False,
+        "captcha": f"hcaptcha {captcha_token}",
+    }
+
+    res = connection.post(
+        "/rso-authenticator/v1/authentication/riot-identity/complete",
+        json=data,
+    )
+    res_json = res.json()
+    logger.debug(res_json)
+    login_token = res_json.get("success", {}).get("login_token", "")
+    if not login_token:
+        return {"ok": False, "detail": "Auth failure."}
+
+    logger.info(f"Patching login token...")
+    data = {
+        "authentication_type": "RiotAuth",
+        "login_token": login_token,
+        "persist_login": False,
+    }
+
+    res = connection.put("/rso-auth/v1/session/login-token", json=data)
+    res_json = res.json()
+    logger.debug(res_json)
+    if not res_json.get("type") == "authenticated":
+        return {"ok": False, "detail": "Auth failure."}
+
+    logger.info("Posting authorizations...")
     data = {"clientId": "riot-client", "trustLevels": ["always_trusted"]}
     res = connection.post("/rso-auth/v2/authorizations", json=data)
-    if not res.ok and "rate_limited" in res.text:
-        return {"ok": False, "detail": "Rate limited."}
-    data = {"username": username, "password": password, "persistLogin": False}
-    res = connection.put("/rso-auth/v1/session/credentials", json=data)
     res_json = res.json()
+    logger.debug(res_json)
+
     if "message" in res_json:
         if res_json["message"] == "authorization_error: consent_required: ":
             return {"ok": False, "detail": "Consent required."}
@@ -101,7 +196,9 @@ def authorize(connection, username, password):
 
 
 def launch_league(connection):
-    connection.post("/product-launcher/v1/products/league_of_legends/patchlines/live")
+    connection.post(
+        "/product-launcher/v1/products/league_of_legends/patchlines/live"
+    )
 
 
 def get_product_context_phase(connection):
@@ -111,7 +208,15 @@ def get_product_context_phase(connection):
     return res.json()
 
 
-def login(connection, username, password, timeout=180, patch_timeout=7200):
+def login(
+    connection,
+    username,
+    password,
+    timeout=180,
+    patch_timeout=7200,
+    captcha_service=None,
+    captcha_api_key=None,
+):
     logger.info("Logging in...")
     start_time = time.time()
     phases = get_phases()
@@ -148,7 +253,13 @@ def login(connection, username, password, timeout=180, patch_timeout=7200):
             time.sleep(2)
             continue
         if phase is None or phase in phases["login"]:
-            res = authorize(connection, username, password)
+            res = authorize(
+                connection,
+                username,
+                password,
+                captcha_service=captcha_service,
+                captcha_api_key=captcha_api_key,
+            )
             if not res["ok"]:
                 return res
             if res["ok"] and res["logged_in"]:
