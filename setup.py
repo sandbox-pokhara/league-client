@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="league-client",
-    version="1.0.36",
+    version="1.0.37",
     author="Pradish Bijukchhe",
     author_email="pradishbijukchhe@gmail.com",
     description="Python package to communicate with riot client and league client",
@@ -24,5 +24,11 @@ setuptools.setup(
     package_data={"league_client": ["*.json"]},
     packages=setuptools.find_packages(where="."),
     python_requires=">=3.6",
-    install_requires=["requests", "league-connection", "psutil", "aiohttp"],
+    install_requires=[
+        "requests",
+        "league-connection",
+        "psutil",
+        "aiohttp",
+        "ucaptcha",
+    ],
 )
