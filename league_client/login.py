@@ -4,6 +4,11 @@ import os
 import time
 
 import requests
+from ucaptcha import solver
+from ucaptcha.exceptions import CaptchaException
+from ucaptcha.exceptions import KeyDoesNotExistException
+from ucaptcha.exceptions import WrongUserKeyException
+from ucaptcha.exceptions import ZeroBalanceException
 
 from league_client.constants import SITE_URL
 from league_client.constants import USER_AGENT
@@ -96,27 +101,21 @@ def wait_until_patched(connection, timeout=7200):
             pass
 
 
-from ucaptcha import solver
-
-
 def get_captcha_token(connection, captcha_service, captch_api_key):
-    async def task():
-        rq_and_site_key_data = get_rq_data_and_site_key(connection)
-        site_key = rq_and_site_key_data["key"]
-        rq_data = rq_and_site_key_data["data"]
-        return await solver.solve_captcha(
-            captcha_service,
-            captch_api_key,
-            site_key,
-            SITE_URL,
-            USER_AGENT,
-            rq_data,
-        )
-
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    result = loop.run_until_complete(task())
-    return result
+    rq_and_site_key_data = get_rq_data_and_site_key(connection)
+    if rq_and_site_key_data is None:
+        logger.info("Cannot fetch rq and site key data.")
+        return None
+    site_key = rq_and_site_key_data["key"]
+    rq_data = rq_and_site_key_data["data"]
+    return solver.solve_captcha(
+        captcha_service,
+        captch_api_key,
+        site_key,
+        SITE_URL,
+        USER_AGENT,
+        rq_data,
+    )
 
 
 def authorize(
@@ -139,13 +138,27 @@ def authorize(
         return {"ok": True, "logged_in": True}
 
     captcha_token = None
-    if captcha_api_key is not None:
-        logger.info("Getting captcha token...")
-        captcha_token = get_captcha_token(
-            connection, captcha_service, captcha_api_key
-        )
-        if captcha_token is None:
-            return {"ok": True, "logged_in": False}
+    try:
+        if captcha_api_key is not None:
+            logger.info("Getting captcha token...")
+            captcha_token = get_captcha_token(
+                connection, captcha_service, captcha_api_key
+            )
+            if captcha_token is None:
+                return {"ok": False, "detail": "None Captcha"}
+    except (
+        KeyDoesNotExistException,
+        WrongUserKeyException,
+        ZeroBalanceException,
+    ) as exp:
+        logger.info(f"Captcha Error:  {exp.__class__.__name}")
+        return {
+            "ok": False,
+            "detail": f"Captcha Exception: {exp.__class__.__name}",
+        }
+    except CaptchaException as exp:
+        logger.info(f"Captcha Error: {exp}")
+        return {"ok": False, "detail": f"Captcha Exception: {str(exp)}"}
 
     logger.info("Getting login token...")
     data = {
