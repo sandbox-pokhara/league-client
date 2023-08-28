@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="league-client",
-    version="1.0.37",
+    version="1.0.38",
     author="Pradish Bijukchhe",
     author_email="pradishbijukchhe@gmail.com",
     description="Python package to communicate with riot client and league client",
