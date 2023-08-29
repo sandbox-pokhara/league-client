@@ -102,7 +102,11 @@ def wait_until_patched(connection, timeout=7200):
 
 
 def get_captcha_token(
-    connection, captcha_service, captch_api_key, cookies=None
+    connection,
+    captcha_service,
+    captch_api_key,
+    user_agent,
+    cookies=None,
 ):
     rq_and_site_key_data = get_rq_data_and_site_key(connection)
     if rq_and_site_key_data is None:
@@ -115,7 +119,7 @@ def get_captcha_token(
         captch_api_key,
         site_key,
         SITE_URL,
-        USER_AGENT,
+        user_agent,
         rq_data,
         cookies=cookies,
     )
@@ -128,6 +132,7 @@ def authorize(
     captcha_service,
     captcha_api_key,
     cookies=None,
+    user_agent=USER_AGENT,
 ):
     authorized = get_is_authorized(connection)
 
@@ -146,7 +151,11 @@ def authorize(
         if captcha_api_key is not None:
             logger.info(f"Getting captcha token using {captcha_service}...")
             captcha_token = get_captcha_token(
-                connection, captcha_service, captcha_api_key, cookies
+                connection,
+                captcha_service,
+                captcha_api_key,
+                user_agent,
+                cookies,
             )
             if captcha_token is None:
                 return {"ok": False, "detail": "None Captcha"}
@@ -243,6 +252,8 @@ def login(
     patch_timeout=7200,
     captcha_service=None,
     captcha_api_key=None,
+    user_agent=USER_AGENT,
+    cookies=None,
 ):
     logger.info("Logging in...")
     start_time = time.time()
@@ -286,6 +297,8 @@ def login(
                 password,
                 captcha_service=captcha_service,
                 captcha_api_key=captcha_api_key,
+                user_agent=user_agent,
+                cookies=cookies,
             )
             if not res["ok"]:
                 return res
