@@ -174,6 +174,10 @@ def authorize(
     )
     res_json = res.json()
     logger.debug(res_json)
+
+    if "auth_failure" in res_json.get("error"):
+        return {"ok": False, "detail": "Auth failure."}
+
     login_token = res_json.get("success", {}).get("login_token", "")
     if not login_token:
         return {"ok": False, "detail": "Auth failure."}
@@ -196,6 +200,12 @@ def authorize(
     res = connection.post("/rso-auth/v2/authorizations", json=data)
     res_json = res.json()
     logger.debug(res_json)
+
+    if res_json.get("type") == "authorized":
+        return {"ok": True, "logged_in": True}
+
+    if res_json.get("type") == "needs_authentication":
+        return {"ok": False, "detail": "needs_authentication"}
 
     if "message" in res_json:
         if res_json["message"] == "authorization_error: consent_required: ":
