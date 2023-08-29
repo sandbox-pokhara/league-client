@@ -42,3 +42,7 @@ pip install league-client
 05/10/2022 12:18:28 PM - INFO - Checking username...
 {'ok': True}
 ```
+
+### Change Log
+
+- Add option to pass custom user agent and cookies.
