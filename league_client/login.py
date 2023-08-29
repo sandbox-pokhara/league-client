@@ -179,6 +179,7 @@ def authorize(
         "password": password,
         "remember": False,
         "captcha": f"hcaptcha {captcha_token}",
+        "language": "en_GB",
     }
 
     res = connection.post(
