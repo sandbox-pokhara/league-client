@@ -101,7 +101,9 @@ def wait_until_patched(connection, timeout=7200):
             pass
 
 
-def get_captcha_token(connection, captcha_service, captch_api_key):
+def get_captcha_token(
+    connection, captcha_service, captch_api_key, cookies=None
+):
     rq_and_site_key_data = get_rq_data_and_site_key(connection)
     if rq_and_site_key_data is None:
         logger.info("Cannot fetch rq and site key data.")
@@ -115,6 +117,7 @@ def get_captcha_token(connection, captcha_service, captch_api_key):
         SITE_URL,
         USER_AGENT,
         rq_data,
+        cookies=cookies,
     )
 
 
@@ -124,6 +127,7 @@ def authorize(
     password,
     captcha_service,
     captcha_api_key,
+    cookies=None,
 ):
     authorized = get_is_authorized(connection)
 
@@ -140,9 +144,9 @@ def authorize(
     captcha_token = None
     try:
         if captcha_api_key is not None:
-            logger.info("Getting captcha token...")
+            logger.info(f"Getting captcha token using {captcha_service}...")
             captcha_token = get_captcha_token(
-                connection, captcha_service, captcha_api_key
+                connection, captcha_service, captcha_api_key, cookies
             )
             if captcha_token is None:
                 return {"ok": False, "detail": "None Captcha"}
