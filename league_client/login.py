@@ -137,7 +137,7 @@ def get_login_token(connection, username, password, captcha_token):
     logger.info("Posting telemetry...")
     data = {"action": "succeeded", "type": "hcaptcha"}
     res = connection.put(
-        "telemetry/v2/events/riotclient__CaptchaEvent__v2", json=data
+        "/telemetry/v2/events/riotclient__CaptchaEvent__v2", json=data
     )
     logger.debug(f"{res.status_code}{res.text}")
 
