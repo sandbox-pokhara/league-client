@@ -102,27 +102,60 @@ def wait_until_patched(connection, timeout=7200):
 
 
 def get_captcha_token(
-    connection,
     captcha_service,
-    captch_api_key,
-    user_agent,
+    captcha_api_key,
+    rq_data,
+    site_key,
     cookies=None,
+    user_agent=USER_AGENT,
 ):
-    rq_and_site_key_data = get_rq_data_and_site_key(connection)
-    if rq_and_site_key_data is None:
-        logger.info("Cannot fetch rq and site key data.")
+    try:
+        logger.info(f"Getting captcha token using {captcha_service}...")
+        return solver.solve_captcha(
+            captcha_service,
+            captcha_api_key,
+            site_key,
+            SITE_URL,
+            user_agent,
+            rq_data,
+            cookies=cookies,
+        )
+
+    except (
+        KeyDoesNotExistException,
+        WrongUserKeyException,
+        ZeroBalanceException,
+    ) as exp:
+        logger.info(f"Captcha Error:  {exp.__class__.__name}")
         return None
-    site_key = rq_and_site_key_data["key"]
-    rq_data = rq_and_site_key_data["data"]
-    return solver.solve_captcha(
-        captcha_service,
-        captch_api_key,
-        site_key,
-        SITE_URL,
-        user_agent,
-        rq_data,
-        cookies=cookies,
+    except CaptchaException as exp:
+        logger.info(f"Captcha Error: {exp}")
+        return None
+
+
+def get_login_token(connection, username, password, captcha_token):
+    logger.info("Posting telemetry...")
+    data = {"action": "succeeded", "type": "hcaptcha"}
+    res = connection.put(
+        "telemetry/v2/events/riotclient__CaptchaEvent__v2", json=data
     )
+    logger.debug(f"{res.status_code}{res.text}")
+
+    logger.info("Getting login token...")
+    data = {
+        "username": username,
+        "password": password,
+        "remember": False,
+        "captcha": f"hcaptcha {captcha_token}",
+        "language": "en_GB",
+    }
+    res = connection.post(
+        "/rso-authenticator/v1/authentication/riot-identity/complete",
+        json=data,
+    )
+    res_json = res.json()
+    logger.debug(res_json)
+    return res_json
 
 
 def authorize(
@@ -146,53 +179,58 @@ def authorize(
         accept_agreement(connection)
         return {"ok": True, "logged_in": True}
 
-    captcha_token = None
-    try:
-        if captcha_api_key is not None:
-            logger.info(f"Getting captcha token using {captcha_service}...")
-            captcha_token = get_captcha_token(
-                connection,
-                captcha_service,
-                captcha_api_key,
-                user_agent,
-                cookies,
-            )
-            if captcha_token is None:
-                return {"ok": False, "detail": "None Captcha"}
-    except (
-        KeyDoesNotExistException,
-        WrongUserKeyException,
-        ZeroBalanceException,
-    ) as exp:
-        logger.info(f"Captcha Error:  {exp.__class__.__name}")
-        return {
-            "ok": False,
-            "detail": f"Captcha Exception: {exp.__class__.__name}",
-        }
-    except CaptchaException as exp:
-        logger.info(f"Captcha Error: {exp}")
-        return {"ok": False, "detail": f"Captcha Exception: {str(exp)}"}
+    rq_and_site_key_data = get_rq_data_and_site_key(connection)
 
-    logger.info("Getting login token...")
-    data = {
-        "username": username,
-        "password": password,
-        "remember": False,
-        "captcha": f"hcaptcha {captcha_token}",
-        "language": "en_GB",
-    }
+    logger.debug(f"rq_data: {rq_and_site_key_data}")
+    if rq_and_site_key_data is None:
+        logger.info("Cannot fetch rq and site key data.")
+        return {"ok": False, "detail": "Empty rq_data"}
+    site_key = rq_and_site_key_data["key"]
+    rq_data = rq_and_site_key_data["data"]
 
-    res = connection.post(
-        "/rso-authenticator/v1/authentication/riot-identity/complete",
-        json=data,
+    captcha_token = get_captcha_token(
+        captcha_service=captcha_service,
+        captcha_api_key=captcha_api_key,
+        rq_data=rq_data,
+        site_key=site_key,
+        cookies=cookies,
+        user_agent=user_agent,
     )
-    res_json = res.json()
-    logger.debug(res_json)
 
-    if "auth_failure" in res_json.get("error"):
-        return {"ok": False, "detail": "Auth failure."}
+    if captcha_token is None:
+        return {"ok": False, "detail": "Invalid captcha response."}
 
-    login_token = res_json.get("success", {}).get("login_token", "")
+    login_token_response = get_login_token(
+        connection, username, password, captcha_token
+    )
+
+    # Check if needs to redo captcha
+    if "captcha_not_allowed" in login_token_response.get("error"):
+        logger.info(f"Captcha not allowed. Resolving captcha...")
+        site_key = login_token_response["captcha"]["hcaptcha"]["key"]
+        rq_data = login_token_response["captcha"]["hcaptcha"]["data"]
+
+        captcha_token = get_captcha_token(
+            captcha_service=captcha_service,
+            captcha_api_key=captcha_api_key,
+            rq_data=rq_data,
+            site_key=site_key,
+            cookies=cookies,
+            user_agent=user_agent,
+        )
+        if captcha_token is None:
+            return {"ok": False, "detail": "Invalid captcha response."}
+
+        login_token_response = get_login_token(
+            connection, username, password, captcha_token
+        )
+
+    if login_token_response.get("error"):
+        return {"ok": False, "detail": login_token_response.get("error")}
+
+    login_token = login_token_response.get("success", {}).get(
+        "login_token", ""
+    )
     if not login_token:
         return {"ok": False, "detail": "Auth failure."}
 
