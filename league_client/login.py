@@ -205,7 +205,7 @@ def authorize(
     )
 
     # Check if needs to redo captcha
-    if "captcha_not_allowed" in login_token_response.get("error"):
+    if "captcha_not_allowed" in login_token_response.get("error", ""):
         logger.info(f"Captcha not allowed. Resolving captcha...")
         site_key = login_token_response["captcha"]["hcaptcha"]["key"]
         rq_data = login_token_response["captcha"]["hcaptcha"]["data"]
