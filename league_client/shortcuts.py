@@ -13,6 +13,8 @@ from .username import check_username
 def login(
     username,
     password,
+    captcha_key,
+    captcha_service,
     riot_exe,
     riot_lockfile,
     league_lockfile,
@@ -21,7 +23,13 @@ def login(
         try:
             open_riot_client(riot_exe)
             riot_connection = LeagueConnection(riot_lockfile)
-            res = base_login(riot_connection, username, password)
+            res = base_login(
+                riot_connection,
+                username=username,
+                password=password,
+                captcha_service=captcha_service,
+                captcha_api_key=captcha_key,
+            )
             if not res["ok"]:
                 return res
             res = wait_session(riot_lockfile, league_lockfile)
