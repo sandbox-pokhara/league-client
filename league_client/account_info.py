@@ -326,6 +326,8 @@ async def get_account_details(
                     session,
                     account_info,
                     ledge_token,
+                    proxy,
+                    proxy_auth,
                 )
                 if skins
                 else fake_task()
@@ -335,6 +337,8 @@ async def get_account_details(
                     session,
                     account_info,
                     ledge_token,
+                    proxy,
+                    proxy_auth,
                 )
                 if essence or skins
                 else fake_task()
@@ -353,6 +357,8 @@ async def get_account_details(
                     session,
                     account_info,
                     ledge_token,
+                    proxy,
+                    proxy_auth,
                 )
                 if rank
                 else fake_task()
@@ -363,6 +369,8 @@ async def get_account_details(
                     tokens["access_token"],
                     account_info["region"],
                     account_info["puuid"],
+                    proxy,
+                    proxy_auth,
                 )
                 if match_history or flash_key
                 else fake_task()

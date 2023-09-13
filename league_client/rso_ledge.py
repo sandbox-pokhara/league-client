@@ -133,7 +133,9 @@ async def create_login_queue(
             "Authorization": f'Bearer {tokens["access_token"]}',
         }
         async with session.post(
-            urljoin(pp_url, f"login-queue/v2/login/products/lol/regions/{region}"),
+            urljoin(
+                pp_url, f"login-queue/v2/login/products/lol/regions/{region}"
+            ),
             proxy=proxy,
             proxy_auth=proxy_auth,
             json=data,
@@ -200,7 +202,9 @@ async def create_login_session(
         raise ParseError("Failed to create login session", "UNKNOWN") from e
 
 
-async def parse_ledge_token(session, account_info, tokens, proxy=None, proxy_auth=None):
+async def parse_ledge_token(
+    session, account_info, tokens, proxy=None, proxy_auth=None
+):
     """Parse league edge auth token
 
     Args:
@@ -285,7 +289,9 @@ async def get_owned_skins(
         raise ParseError("Failed to get owned skins", "UNKNOWN") from e
 
 
-async def get_loot(session, account_info, ledge_token, proxy=None, proxy_auth=None):
+async def get_loot(
+    session, account_info, ledge_token, proxy=None, proxy_auth=None
+):
     """Get loot info (champion shards, skin shards, essence)
 
     Args:
@@ -308,9 +314,7 @@ async def get_loot(session, account_info, ledge_token, proxy=None, proxy_auth=No
         summoner_id = account_info["summoner_id"]
         url = get_league_edge_url(region)
         location = get_discoverous_service_location(region)
-        url += (
-            f"/loot/v1/playerlootdefinitions/location/{location}/playerId/{summoner_id}"
-        )
+        url += f"/loot/v1/playerlootdefinitions/location/{location}/playerId/{summoner_id}"
         headers = {
             "Authorization": f"Bearer {ledge_token}",
         }
@@ -324,27 +328,41 @@ async def get_loot(session, account_info, ledge_token, proxy=None, proxy_auth=No
                 )
             loot = (await res.json())["playerLoot"]
             blue_essence = next(
-                filter(lambda item: "CURRENCY_champion" in item["lootName"], loot), None
+                filter(
+                    lambda item: "CURRENCY_champion" in item["lootName"], loot
+                ),
+                None,
             )["count"]
             orange_essence = next(
-                filter(lambda item: "CURRENCY_cosmetic" in item["lootName"], loot), None
+                filter(
+                    lambda item: "CURRENCY_cosmetic" in item["lootName"], loot
+                ),
+                None,
             )["count"]
             mythic_essence = next(
-                filter(lambda item: "CURRENCY_mythic" in item["lootName"], loot), None
+                filter(
+                    lambda item: "CURRENCY_mythic" in item["lootName"], loot
+                ),
+                None,
             )["count"]
             all_skins = [
                 item["lootName"]
                 for item in list(
-                    filter(lambda item: "CHAMPION_SKIN_" in item["lootName"], loot)
+                    filter(
+                        lambda item: "CHAMPION_SKIN_" in item["lootName"], loot
+                    )
                 )
             ]
             normal_skins = list(
                 filter(lambda item: "CHAMPION_SKIN_RENTAL" in item, all_skins)
             )
-            perm_skins = list(filter(lambda item: item not in normal_skins, all_skins))
+            perm_skins = list(
+                filter(lambda item: item not in normal_skins, all_skins)
+            )
             if normal_skins:
                 normal_skins = [
-                    int(item.split("CHAMPION_SKIN_RENTAL_")[1]) for item in normal_skins
+                    int(item.split("CHAMPION_SKIN_RENTAL_")[1])
+                    for item in normal_skins
                 ]
             if perm_skins:
                 perm_skins = [
@@ -357,7 +375,13 @@ async def get_loot(session, account_info, ledge_token, proxy=None, proxy_auth=No
                 "normal_skins": normal_skins,
                 "permanent_skins": perm_skins,
             }
-    except (aiohttp.ClientError, ValueError, KeyError, IndexError, TypeError) as e:
+    except (
+        aiohttp.ClientError,
+        ValueError,
+        KeyError,
+        IndexError,
+        TypeError,
+    ) as e:
         logger.exception("Failed to get loot stats")
         raise ParseError("Failed to get loot stats", "UNKNOWN") from e
 
@@ -439,7 +463,9 @@ async def get_rank_info(
                     "Failed to get rank info", "RANK_INFO", res
                 )
             queues = (await res.json())["queues"]
-            filtered_queue = [q for q in queues if q["queueType"] == "RANKED_SOLO_5x5"]
+            filtered_queue = [
+                q for q in queues if q["queueType"] == "RANKED_SOLO_5x5"
+            ]
             if not filtered_queue:
                 raise LeagueEdgeError(
                     "Failed to get ranked-solo queue", "QUEUE_NOT_FOUND"
@@ -468,7 +494,11 @@ async def get_match_history(
     )
     url = get_player_platform_edge_url(region)
     url += f"/match-history-query/v1/products/lol/player/{puuid}/SUMMARY?startIndex=0&count=30"
-    async with session.get(url) as res:
+    async with session.get(
+        url,
+        proxy=proxy,
+        proxy_auth=proxy_auth,
+    ) as res:
         if not res.ok:
             raise await LeagueEdgeBadResponse.create(
                 "Failed to parse match history", "MATCH_HISTORY", res
