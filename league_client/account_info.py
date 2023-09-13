@@ -348,6 +348,8 @@ async def get_account_details(
                     session,
                     account_info,
                     ledge_token,
+                    proxy,
+                    proxy_auth,
                 )
                 if honor
                 else fake_task()
