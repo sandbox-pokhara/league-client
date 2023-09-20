@@ -29,6 +29,6 @@ setuptools.setup(
         "league-connection",
         "psutil",
         "aiohttp",
-        "ucaptcha>=1.0.2",
+        "ucaptcha>=1.0.5",
     ],
 )
