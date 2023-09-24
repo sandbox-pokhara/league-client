@@ -133,7 +133,7 @@ def get_captcha_token(
         return None
 
 
-def get_login_token(connection, username, password, captcha_token):
+def get_login_token(connection, username, password, captcha_token, remember):
     logger.info("Posting telemetry...")
     data = {"action": "succeeded", "type": "hcaptcha"}
     res = connection.put(
@@ -145,7 +145,7 @@ def get_login_token(connection, username, password, captcha_token):
     data = {
         "username": username,
         "password": password,
-        "remember": False,
+        "remember": remember,
         "captcha": f"hcaptcha {captcha_token}",
         "language": "en_GB",
     }
@@ -164,6 +164,7 @@ def authorize(
     password,
     captcha_service,
     captcha_api_key,
+    persist_login=False,
     cookies=None,
     user_agent=USER_AGENT,
 ):
@@ -201,7 +202,11 @@ def authorize(
         return {"ok": False, "detail": "Invalid captcha response."}
 
     login_token_response = get_login_token(
-        connection, username, password, captcha_token
+        connection,
+        username,
+        password,
+        captcha_token,
+        remember=persist_login,
     )
 
     # Check if needs to redo captcha
@@ -222,7 +227,11 @@ def authorize(
             return {"ok": False, "detail": "Invalid captcha response."}
 
         login_token_response = get_login_token(
-            connection, username, password, captcha_token
+            connection,
+            username,
+            password,
+            captcha_token,
+            remember=persist_login,
         )
 
     if login_token_response.get("error"):
@@ -238,7 +247,7 @@ def authorize(
     data = {
         "authentication_type": "RiotAuth",
         "login_token": login_token,
-        "persist_login": False,
+        "persist_login": persist_login,
     }
 
     res = connection.put("/rso-auth/v1/session/login-token", json=data)
@@ -287,6 +296,7 @@ def login(
     connection,
     username,
     password,
+    persist_login=False,
     timeout=180,
     patch_timeout=7200,
     captcha_service=None,
@@ -334,6 +344,7 @@ def login(
                 connection,
                 username,
                 password,
+                persist_login=persist_login,
                 captcha_service=captcha_service,
                 captcha_api_key=captcha_api_key,
                 user_agent=user_agent,
