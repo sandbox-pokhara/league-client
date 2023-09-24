@@ -111,14 +111,17 @@ def get_captcha_token(
 ):
     try:
         logger.info(f"Getting captcha token using {captcha_service}...")
-        return solver.solve_captcha(
-            captcha_service,
-            captcha_api_key,
-            site_key,
-            SITE_URL,
-            user_agent,
-            rq_data,
-            cookies=cookies,
+        return (
+            solver.solve_captcha(
+                captcha_service,
+                captcha_api_key,
+                site_key,
+                SITE_URL,
+                user_agent,
+                rq_data,
+                cookies=cookies,
+            ),
+            None,
         )
 
     except (
@@ -126,11 +129,11 @@ def get_captcha_token(
         WrongUserKeyException,
         ZeroBalanceException,
     ) as exp:
-        logger.info(f"Captcha Error:  {exp.__class__.__name}")
-        return None
+        logger.info(f"Captcha Error:  {exp.__class__.__name__}")
+        return None, f"Captcha Error:  {exp.__class__.__name__}"
     except CaptchaException as exp:
         logger.info(f"Captcha Error: {exp}")
-        return None
+        return None, f"Captcha Error: {exp}"
 
 
 def get_login_token(connection, username, password, captcha_token, remember):
@@ -189,7 +192,7 @@ def authorize(
     site_key = rq_and_site_key_data["key"]
     rq_data = rq_and_site_key_data["data"]
 
-    captcha_token = get_captcha_token(
+    captcha_token, captcha_error = get_captcha_token(
         captcha_service=captcha_service,
         captcha_api_key=captcha_api_key,
         rq_data=rq_data,
@@ -199,7 +202,7 @@ def authorize(
     )
 
     if captcha_token is None:
-        return {"ok": False, "detail": "Invalid captcha response."}
+        return {"ok": False, "detail": f"{captcha_error}."}
 
     login_token_response = get_login_token(
         connection,
@@ -215,7 +218,7 @@ def authorize(
         site_key = login_token_response["captcha"]["hcaptcha"]["key"]
         rq_data = login_token_response["captcha"]["hcaptcha"]["data"]
 
-        captcha_token = get_captcha_token(
+        captcha_token, captcha_error = get_captcha_token(
             captcha_service=captcha_service,
             captcha_api_key=captcha_api_key,
             rq_data=rq_data,
@@ -224,7 +227,7 @@ def authorize(
             user_agent=user_agent,
         )
         if captcha_token is None:
-            return {"ok": False, "detail": "Invalid captcha response."}
+            return {"ok": False, "detail": f"Captcha error: {captcha_error}."}
 
         login_token_response = get_login_token(
             connection,
