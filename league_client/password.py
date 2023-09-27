@@ -2,11 +2,8 @@ import re
 from copy import copy
 
 from .logger import logger
-from .rso import HEADERS
-from .rso import ClientSession
-from .rso import get_basic_auth
-from .rso_auth import parsing_auth_code
-from .rso_auth import rso_authorize
+from .rso import HEADERS, ClientSession, get_basic_auth
+from .rso_auth import parsing_auth_code, rso_authorize
 
 accountodactyl = {
     "scope": (
@@ -116,6 +113,11 @@ async def change_password(
         )
         if csrf_token is None:
             return False
+
+        logger.debug(
+            f'Changing password for "{username}" from "{password}" to'
+            f' "{new_password}"'
+        )
 
         if not await post_change_password(
             session,
