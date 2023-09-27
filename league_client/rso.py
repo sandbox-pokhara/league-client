@@ -13,7 +13,7 @@ FORCED_CIPHERS = [
     "ECDHE-RSA-CHACHA20-POLY1305",
     "ECDHE-RSA-AES128-SHA256",
     "ECDHE-RSA-AES128-SHA",
-    "ECDHE-RSA-AES256-SHA" "ECDHE-ECDSA-AES128-SHA256",
+    "ECDHE-RSA-AES256-SHAECDHE-ECDSA-AES128-SHA256",
     "ECDHE-ECDSA-AES128-SHA",
     "ECDHE-ECDSA-AES256-SHA",
     "ECDHE+AES128",
@@ -26,7 +26,10 @@ FORCED_CIPHERS = [
 
 HEADERS = {
     "Content-Type": "application/json",
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36",
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,"
+        " like Gecko) Chrome/107.0.0.0 Safari/537.36"
+    ),
     "Accept": "application/json, text/plain, */*",
 }
 

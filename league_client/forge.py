@@ -13,15 +13,27 @@ def forge(connection, recipe, data, repeat=1):
     if repeat == 0:
         return
     logger.info(f"Forging {recipe}, repeat: {repeat}")
-    connection.post(f"/lol-loot/v1/recipes/{recipe}/craft?repeat={repeat}", json=data)
+    connection.post(
+        f"/lol-loot/v1/recipes/{recipe}/craft?repeat={repeat}", json=data
+    )
 
 
 def forge_key_from_key_fragments(connection, repeat=1):
-    forge(connection, "MATERIAL_key_fragment_forge", ["MATERIAL_key_fragment"], repeat)
+    forge(
+        connection,
+        "MATERIAL_key_fragment_forge",
+        ["MATERIAL_key_fragment"],
+        repeat,
+    )
 
 
 def open_generic_chests(connection, repeat=1):
-    forge(connection, "CHEST_generic_OPEN", ["CHEST_generic", "MATERIAL_key"], repeat)
+    forge(
+        connection,
+        "CHEST_generic_OPEN",
+        ["CHEST_generic", "MATERIAL_key"],
+        repeat,
+    )
 
 
 def open_masterwork_chests(connection, repeat=1):

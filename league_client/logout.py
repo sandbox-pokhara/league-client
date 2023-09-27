@@ -10,7 +10,8 @@ from .logger import logger
 def remove_riot_private_settings():
     logger.info("Removing riot private settings...")
     path = os.path.expandvars(
-        r"%LOCALAPPDATA%\Riot Games\Riot Client\Data\RiotGamesPrivateSettings.yaml"
+        r"%LOCALAPPDATA%\Riot Games\Riot"
+        r" Client\Data\RiotGamesPrivateSettings.yaml"
     )
     try:
         os.remove(path)

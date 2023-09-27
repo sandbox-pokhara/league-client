@@ -1,6 +1,8 @@
 import requests
 
-gift_url = "https://euw.store.leagueoflegends.com/storefront/v3/gift?language=en_GB"
+gift_url = (
+    "https://euw.store.leagueoflegends.com/storefront/v3/gift?language=en_GB"
+)
 
 
 def get_giftable_friends(connection):

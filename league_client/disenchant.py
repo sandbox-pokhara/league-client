@@ -23,12 +23,10 @@ def disenchant(connection, loot):
             continue
         logger.info(
             f"Disenchanting: {name}, "
-            f'Count: {data["count"]}, '
-            f'Value: {data["disenchantValue"]}'
+            f"Count: {data['count']}, "
+            f"Value: {data['disenchantValue']}"
         )
-        url = (
-            f'/lol-loot/v1/recipes/{recipe["recipeName"]}/craft?repeat={data["count"]}'
-        )
+        url = f'/lol-loot/v1/recipes/{recipe["recipeName"]}/craft?repeat={data["count"]}'
         data = [data["lootName"]]
         res = connection.post(url, json=data)
         if res.ok:

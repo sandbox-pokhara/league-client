@@ -66,19 +66,25 @@ async def parse_userinfo(
                 userinfo = await res.json()
                 if userinfo["lol_account"] is None:
                     internal_region = userinfo["original_platform_id"]
-                    internal_region = get_internal_region_by_platform(internal_region)
+                    internal_region = get_internal_region_by_platform(
+                        internal_region
+                    )
                     raise SummonerNotFoundError(
                         "The account does not have a summoner",
                         "NO_SUMMONER",
                         internal_region,
                     )
-                internal_region = get_internal_region_by_tag(userinfo["region"]["tag"])
+                internal_region = get_internal_region_by_tag(
+                    userinfo["region"]["tag"]
+                )
                 info_res = {
                     "country": userinfo["country"],
                     "sub": userinfo["sub"],
                     "summoner_name": userinfo["lol_account"]["summoner_name"],
                     "summoner_id": userinfo["lol_account"]["summoner_id"],
-                    "summoner_level": userinfo["lol_account"]["summoner_level"],
+                    "summoner_level": userinfo["lol_account"][
+                        "summoner_level"
+                    ],
                     "password_changed_at": userinfo["pw"]["cng_at"],
                     "email_verified": userinfo["email_verified"],
                     "phone_number_verified": userinfo["phone_number_verified"],

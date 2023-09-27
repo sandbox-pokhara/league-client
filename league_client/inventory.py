@@ -9,7 +9,10 @@ def get_inventory_by_type(connection, inventory_type):
         if not res.ok:
             return None
         return res.json()
-    except (json.decoder.JSONDecodeError, requests.exceptions.RequestException):
+    except (
+        json.decoder.JSONDecodeError,
+        requests.exceptions.RequestException,
+    ):
         return None
 
 

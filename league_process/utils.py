@@ -11,7 +11,11 @@ def is_running(process_name):
                 # Check if process name contains the given name string.
                 if process_name.lower() == proc.name().lower():
                     return True
-            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+            except (
+                psutil.NoSuchProcess,
+                psutil.AccessDenied,
+                psutil.ZombieProcess,
+            ):
                 pass
     except (TypeError, OSError):
         return False

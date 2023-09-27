@@ -4,3 +4,16 @@ requires = [
     "wheel",
 ]
 build-backend = "setuptools.build_meta"
+
+[tool.isort]
+line_length = 79
+force_single_line = true
+
+[tool.black]
+line-length = 79
+preview = true
+extend-exclude = '''
+/(
+  | migrations
+)/
+'''

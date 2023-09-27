@@ -8,12 +8,16 @@ setuptools.setup(
     version="1.0.56",
     author="Pradish Bijukchhe",
     author_email="pradishbijukchhe@gmail.com",
-    description="Python package to communicate with riot client and league client",
+    description=(
+        "Python package to communicate with riot client and league client"
+    ),
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/sandbox-pokhara/league-client",
     project_urls={
-        "Bug Tracker": "https://github.com/sandbox-pokhara/league-client/issues",
+        "Bug Tracker": (
+            "https://github.com/sandbox-pokhara/league-client/issues"
+        ),
     },
     classifiers=[
         "Programming Language :: Python :: 3",

@@ -8,7 +8,9 @@ from logging.handlers import RotatingFileHandler
 __all__ = ["logger"]
 
 
-def create_logger(file_path, name, formatter=None, stream=True, rotating_file=True):
+def create_logger(
+    file_path, name, formatter=None, stream=True, rotating_file=True
+):
     dirname = os.path.dirname(file_path)
     os.makedirs(dirname, exist_ok=True)
 

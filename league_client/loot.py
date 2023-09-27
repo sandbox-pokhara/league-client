@@ -57,7 +57,10 @@ def get_loot_by_pattern(connection, pattern):
             if re.fullmatch(pattern, s["lootId"])
         ]
         return data
-    except (json.decoder.JSONDecodeError, requests.exceptions.RequestException):
+    except (
+        json.decoder.JSONDecodeError,
+        requests.exceptions.RequestException,
+    ):
         return None
 
 

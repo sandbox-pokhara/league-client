@@ -65,7 +65,9 @@ def parse_info_from_access_token(access_token):
         raise ParseError("Failed to parse info from access token") from e
 
 
-async def parse_entitlements_token(session, access_token, proxy=None, proxy_auth=None):
+async def parse_entitlements_token(
+    session, access_token, proxy=None, proxy_auth=None
+):
     """Parse entitlements token using access token
 
     Args:
@@ -101,7 +103,9 @@ async def parse_entitlements_token(session, access_token, proxy=None, proxy_auth
             return (await res.json())["entitlements_token"]
     except (aiohttp.ClientError, ValueError, KeyError) as e:
         logger.exception("Failed to parse entitlements token")
-        raise ParseError("Failed to parse entitlements token", "UNKNOWN") from e
+        raise ParseError(
+            "Failed to parse entitlements token", "UNKNOWN"
+        ) from e
 
 
 async def get_tokens(
@@ -149,4 +153,7 @@ async def get_tokens(
         entitlements_token = await parse_entitlements_token(
             session, access_token, proxy, proxy_auth
         )
-    return {"access_token": access_token, "entitlements_token": entitlements_token}
+    return {
+        "access_token": access_token,
+        "entitlements_token": entitlements_token,
+    }

@@ -23,7 +23,9 @@ def wait_session_in_progress(connection, timeout=180):
         time.sleep(1)
 
 
-def wait_session(riot_lockfile, league_lockfile, timeout=60, in_progress_timeout=180):
+def wait_session(
+    riot_lockfile, league_lockfile, timeout=60, in_progress_timeout=180
+):
     start = time.time()
     logger.info("Waiting for session...")
     while True:

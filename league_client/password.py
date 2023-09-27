@@ -9,7 +9,16 @@ from .rso_auth import parsing_auth_code
 from .rso_auth import rso_authorize
 
 accountodactyl = {
-    "scope": "openid email profile riot://riot.atlas/accounts.edit riot://riot.atlas/accounts/password.edit riot://riot.atlas/accounts/email.edit riot://riot.atlas/accounts.auth riot://third_party.revoke riot://third_party.query riot://forgetme/notify.write riot://riot.authenticator/auth.code riot://riot.authenticator/authz.edit riot://rso/mfa/device.write riot://riot.authenticator/identity.add",
+    "scope": (
+        "openid email profile riot://riot.atlas/accounts.edit"
+        " riot://riot.atlas/accounts/password.edit"
+        " riot://riot.atlas/accounts/email.edit"
+        " riot://riot.atlas/accounts.auth riot://third_party.revoke"
+        " riot://third_party.query riot://forgetme/notify.write"
+        " riot://riot.authenticator/auth.code"
+        " riot://riot.authenticator/authz.edit riot://rso/mfa/device.write"
+        " riot://riot.authenticator/identity.add"
+    ),
     "state": "fc5a8f17-e99f-4eb9-afd9-a950e0eb30c6",
     "acr_values": "urn:riot:gold",
     "ui_locales": "en",
@@ -39,7 +48,9 @@ async def get_csrf_token(session, proxy, proxy_user=None, proxy_pass=None):
         if not res.ok:
             return None
         text = await res.text()
-        pattern = "<meta name=['\"]csrf-token['\"] content=['\"](.{36})['\"] />"
+        pattern = (
+            "<meta name=['\"]csrf-token['\"] content=['\"](.{36})['\"] />"
+        )
         match = re.search(pattern, text)
         if match is None:
             return None
@@ -77,7 +88,12 @@ async def post_change_password(
 
 
 async def change_password(
-    username, password, new_password, proxy=None, proxy_user=None, proxy_pass=None
+    username,
+    password,
+    new_password,
+    proxy=None,
+    proxy_user=None,
+    proxy_pass=None,
 ):
     async with ClientSession() as session:
         proxy_auth = get_basic_auth(proxy_user, proxy_pass)
@@ -85,7 +101,9 @@ async def change_password(
             session, accountodactyl, proxy, proxy_user, proxy_pass
         ):
             return False
-        data = await rso_authorize(session, username, password, proxy, proxy_auth)
+        data = await rso_authorize(
+            session, username, password, proxy, proxy_auth
+        )
         url = data["response"]["parameters"]["uri"]
         if url is None:
             return False
@@ -93,7 +111,9 @@ async def change_password(
         if not await redirect(session, url, proxy, proxy_user, proxy_pass):
             return False
 
-        csrf_token = await get_csrf_token(session, proxy, proxy_user, proxy_pass)
+        csrf_token = await get_csrf_token(
+            session, proxy, proxy_user, proxy_pass
+        )
         if csrf_token is None:
             return False
 
