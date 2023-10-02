@@ -195,7 +195,7 @@ async def change_password(
     proxy_pass=None,
 ):
     async with ClientSession() as session:
-        csrf_token = initialize_session(
+        csrf_token = await initialize_session(
             session, username, password, proxy, proxy_user, proxy_pass
         )
         if csrf_token is None:
@@ -268,7 +268,7 @@ async def send_verify_link(
         True: Successfully sent the verify link
     """
     async with ClientSession() as session:
-        csrf_token = initialize_session(
+        csrf_token = await initialize_session(
             session, username, password, proxy, proxy_user, proxy_pass
         )
         if csrf_token is None:
@@ -311,7 +311,7 @@ async def change_password_and_send_verify_link(
         # NOTE (True, False): password is changed but verify link could not be sent
     """
     async with ClientSession() as session:
-        csrf_token = initialize_session(
+        csrf_token = await initialize_session(
             session, username, password, proxy, proxy_user, proxy_pass
         )
         if csrf_token is None:
