@@ -59,9 +59,10 @@ async def get_csrf_token(session, proxy, proxy_user=None, proxy_pass=None):
         return match.group(1)
 
 
-async def initialize_session(
+async def initialize_account_manager_session(
     session, username, password, proxy, proxy_user, proxy_pass
 ):
+    """RSO login and returns csrf_token in the provided session"""
     proxy_auth = get_basic_auth(proxy_user, proxy_pass)
     if not await parsing_auth_code(
         session, accountodactyl, proxy, proxy_user, proxy_pass
@@ -195,7 +196,7 @@ async def change_password(
     proxy_pass=None,
 ):
     async with ClientSession() as session:
-        csrf_token = await initialize_session(
+        csrf_token = await initialize_account_manager_session(
             session, username, password, proxy, proxy_user, proxy_pass
         )
         if csrf_token is None:
@@ -268,7 +269,7 @@ async def send_verify_link(
         True: Successfully sent the verify link
     """
     async with ClientSession() as session:
-        csrf_token = await initialize_session(
+        csrf_token = await initialize_account_manager_session(
             session, username, password, proxy, proxy_user, proxy_pass
         )
         if csrf_token is None:
@@ -311,7 +312,7 @@ async def change_password_and_send_verify_link(
         # NOTE (True, False): password is changed but verify link could not be sent
     """
     async with ClientSession() as session:
-        csrf_token = await initialize_session(
+        csrf_token = await initialize_account_manager_session(
             session, username, password, proxy, proxy_user, proxy_pass
         )
         if csrf_token is None:
