@@ -59,6 +59,29 @@ async def get_csrf_token(session, proxy, proxy_user=None, proxy_pass=None):
         return match.group(1)
 
 
+async def initialize_session(
+    session, username, password, proxy, proxy_user, proxy_pass
+):
+    proxy_auth = get_basic_auth(proxy_user, proxy_pass)
+    if not await parsing_auth_code(
+        session, accountodactyl, proxy, proxy_user, proxy_pass
+    ):
+        return None
+    data = await rso_authorize(session, username, password, proxy, proxy_auth)
+    url = data["response"]["parameters"]["uri"]
+    if url is None:
+        return None
+
+    if not await redirect(session, url, proxy, proxy_user, proxy_pass):
+        return None
+
+    csrf_token = await get_csrf_token(session, proxy, proxy_user, proxy_pass)
+    if csrf_token is None:
+        return None
+
+    return csrf_token
+
+
 async def post_change_password(
     session,
     csrf_token,
@@ -172,31 +195,11 @@ async def change_password(
     proxy_pass=None,
 ):
     async with ClientSession() as session:
-        proxy_auth = get_basic_auth(proxy_user, proxy_pass)
-        if not await parsing_auth_code(
-            session, accountodactyl, proxy, proxy_user, proxy_pass
-        ):
-            return False
-        data = await rso_authorize(
-            session, username, password, proxy, proxy_auth
-        )
-        url = data["response"]["parameters"]["uri"]
-        if url is None:
-            return False
-
-        if not await redirect(session, url, proxy, proxy_user, proxy_pass):
-            return False
-
-        csrf_token = await get_csrf_token(
-            session, proxy, proxy_user, proxy_pass
+        csrf_token = initialize_session(
+            session, username, password, proxy, proxy_user, proxy_pass
         )
         if csrf_token is None:
             return False
-
-        logger.debug(
-            f'Changing password for "{username}" from "{password}" to'
-            f' "{new_password}"'
-        )
 
         if not await post_change_password(
             session,
@@ -265,23 +268,8 @@ async def send_verify_link(
         True: Successfully sent the verify link
     """
     async with ClientSession() as session:
-        proxy_auth = get_basic_auth(proxy_user, proxy_pass)
-        if not await parsing_auth_code(
-            session, accountodactyl, proxy, proxy_user, proxy_pass
-        ):
-            return False
-        data = await rso_authorize(
-            session, username, password, proxy, proxy_auth
-        )
-        url = data["response"]["parameters"]["uri"]
-        if url is None:
-            return False
-
-        if not await redirect(session, url, proxy, proxy_user, proxy_pass):
-            return False
-
-        csrf_token = await get_csrf_token(
-            session, proxy, proxy_user, proxy_pass
+        csrf_token = initialize_session(
+            session, username, password, proxy, proxy_user, proxy_pass
         )
         if csrf_token is None:
             return False
@@ -323,23 +311,8 @@ async def change_password_and_send_verify_link(
         # NOTE (True, False): password is changed but verify link could not be sent
     """
     async with ClientSession() as session:
-        proxy_auth = get_basic_auth(proxy_user, proxy_pass)
-        if not await parsing_auth_code(
-            session, accountodactyl, proxy, proxy_user, proxy_pass
-        ):
-            return False, False
-        data = await rso_authorize(
-            session, username, password, proxy, proxy_auth
-        )
-        url = data["response"]["parameters"]["uri"]
-        if url is None:
-            return False, False
-
-        if not await redirect(session, url, proxy, proxy_user, proxy_pass):
-            return False, False
-
-        csrf_token = await get_csrf_token(
-            session, proxy, proxy_user, proxy_pass
+        csrf_token = initialize_session(
+            session, username, password, proxy, proxy_user, proxy_pass
         )
         if csrf_token is None:
             return False, False
