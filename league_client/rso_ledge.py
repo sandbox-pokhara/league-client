@@ -311,10 +311,10 @@ async def get_loot(
     """
     try:
         region = account_info["region"]
-        summoner_id = account_info["summoner_id"]
+        puuid = account_info["puuid"]
         url = get_league_edge_url(region)
-        location = get_discoverous_service_location(region)
-        url += f"/loot/v1/playerlootdefinitions/location/{location}/playerId/{summoner_id}"
+        # new url /loot/v2
+        url += f"/loot/v2/player/{puuid}/loot/definitions"
         headers = {
             "Authorization": f"Bearer {ledge_token}",
         }
