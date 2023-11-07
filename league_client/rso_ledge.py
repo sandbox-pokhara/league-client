@@ -153,6 +153,14 @@ async def create_login_queue(
         raise ParseError("Failed to create login queue", "UNKNOWN") from e
 
 
+def extract_skin_id(loot_name, loot_text):
+    skin_id = loot_name.split(loot_text)[1]
+    if "_" in skin_id:
+        skin_id = skin_id.split("_")[1]
+        return int(skin_id)
+    return int(skin_id)
+
+
 async def create_login_session(
     session, region, login_queue_token, puuid, proxy=None, proxy_auth=None
 ):
@@ -361,12 +369,13 @@ async def get_loot(
             )
             if normal_skins:
                 normal_skins = [
-                    int(item.split("CHAMPION_SKIN_RENTAL_")[1])
+                    extract_skin_id(item, "CHAMPION_SKIN_RENTAL")
                     for item in normal_skins
                 ]
             if perm_skins:
                 perm_skins = [
-                    int(item.split("CHAMPION_SKIN_")[1]) for item in perm_skins
+                    extract_skin_id(item, "CHAMPION_SKIN")
+                    for item in perm_skins
                 ]
             return {
                 "blue_essence": blue_essence,
