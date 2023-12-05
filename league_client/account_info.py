@@ -410,3 +410,105 @@ async def get_account_details(
                     "mythic_essence": mythic_essence_data,
                 }
     return return_data
+
+
+async def get_ban_stats(
+    username: str,
+    password: str,
+    proxy: str = None,
+    proxy_user: str = None,
+    proxy_pass: str = None,
+) -> dict:
+    """Get ban stats for account
+    returns:
+        dict: ban stats {'restrictions': [dict] or []}
+    # Example 1: No restrictions/bans
+    {'restrictions': []}
+
+    # Example 2: Permanent ban for using third-party tools
+    {'restrictions': [
+        {
+            'reason': 'THIRD_PARTY_TOOLS',
+            'scope': 'lol',
+            'type': 'PERMANENT_BAN',
+            'dat': {
+                'gameData': {
+                    'additionalGameIds': [],
+                    'gameLocation': 'NA1',
+                    'productName': 'lol',
+                    'triggerGameId': '1234567890'
+                }
+            }
+        }
+    ]}
+
+    # Example 3: Banned suspicious account, account recovery required
+    {'restrictions': [
+        {
+            'reason': 'ACCOUNT_RECOVERY',
+            'scope': 'riot',
+            'type': 'PERMANENT_BAN',
+            'dat': {
+                'gameData': {'productName': ''}
+            }
+        }
+    ]}
+
+    # Example 4: Chat restriction
+    {'restrictions': [
+        {
+            'reason': 'INAPPROPRIATE_TEXT',
+            'scope': 'lol',
+            'type': 'TEXT_CHAT_RESTRICTION',
+            'dat': {
+                'expirationMillis': 1234567890,
+                'gameData': {
+                    'additionalGameIds': [],
+                    'gameLocation': 'NA1',
+                    'productName': 'lol',
+                    'triggerGameId': '1234567890'
+                }
+            }
+        }
+    ]}
+
+    # Example 5: Gameplay violation restriction
+    {'restrictions': [
+        {
+            'reason': 'GAMEPLAY_VIOLATION',
+            'scope': 'lol',
+            'type': 'TIME_BAN',
+            'dat': {
+                'expirationMillis': 1234567890,
+                'gameData': {
+                    'additionalGameIds': [],
+                    'gameLocation': 'NA1',
+                    'productName': 'lol',
+                    'triggerGameId': '1234567890'
+                }
+            }
+        }
+    ]}
+    Note: It may take approximately 2.5 seconds to return
+
+    raises:
+        LeagueClientError (see exceptions.py)
+    """
+    proxy_auth = get_basic_auth(proxy_user, proxy_pass)
+    async with aiohttp.ClientSession() as session:
+        tokens = await get_tokens(
+            session,
+            username,
+            password,
+            proxy,
+            proxy_auth,
+            client_id="riot-client",
+        )
+        userinfo = await parse_userinfo(
+            session,
+            tokens["access_token"],
+            proxy,
+            proxy_auth,
+            parse_token=False,
+        )
+    return userinfo["info"]["ban_stats"]
