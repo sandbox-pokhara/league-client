@@ -83,39 +83,48 @@ from league_client.disenchant import disenchant_ward_skins
 disenchant_ward_skins(connection)
 ```
 
-#### forge
+### forge
 
 ```py
 from league_client.forge import open_generic_chests
-open_generic_chests(connection, 5)
+data = open_generic_chests(connection, repeat=5)
 # 03/17/2024 07:02:14 PM - INFO - Forging CHEST_generic_OPEN, repeat: 5
+# None
 
 from league_client.forge import open_masterwork_chests
-open_masterwork_chests(connection, 1)
+data = open_masterwork_chests(connection, repeat=1)
 # 03/17/2024 07:03:26 PM - INFO - Forging CHEST_224_OPEN, repeat: 1
+# None
 
 from league_client.forge import open_champion_mastery_chest
-open_champion_mastery_chest(connection, 1)
+data = open_champion_mastery_chest(connection, repeat=1)
 # 03/17/2024 07:05:22 PM - INFO - Forging CHEST_champion_mastery_OPEN, repeat: 1
+# None
 
 from league_client.forge import forge_key_from_key_fragments
-forge_key_from_key_fragments(connection, 1)
+data = forge_key_from_key_fragments(connection, repeat=1)
 # 03/17/2024 07:08:44 PM - INFO - Forging MATERIAL_key_fragment_forge, repeat: 1
+# None
 
 from league_client.forge import forge_keys_and_open_generic_chests
-forge_keys_and_open_generic_chests(connection, 10)
+data = forge_keys_and_open_generic_chests(connection, retry_limit=10)
+# None
 
-from league_client.forge import forge_keys_and_open_masterwork_chests
-forge_keys_and_open_masterwork_chests(connection, 10)
+from league_client.forge import forge_keys_and_open_masterwork_chests 
+data = forge_keys_and_open_masterwork_chests(connection, retry_limit=10)
+# None
 
-from league_client.forge import open_orbs
-open_orbs(connection, 10)
+from league_client.forge import open_orbs 
+data = open_orbs(connection, retry_limit=10)
+# None
 
 from league_client.forge import open_bags
-open_bags(connection, 10)
+data = open_bags(connection, retry_limit=10)
+# None
 
-from league_client.forge import open_eternals_capsules
-open_eternals_capsules(connection, 10)
+from league_client.forge import open_eternals_capsules 
+data =  open_eternals_capsules(connection, retry_limit=10)
+# None
 ```
 
 #### friend_requests
@@ -142,7 +151,17 @@ from league_client.gifting import get_giftable_friends
 get_giftable_friends(connection)
 
 from league_client.gifting import post_gift
-post_gift(connection)
+data = post_gift(
+    token,
+    sender_account_id,
+    recipient,
+    message,
+    category_id,
+    inventory_type,
+    item_id,
+    rp,
+    quantity=1,
+)
 ```
 
 #### inventory
@@ -311,75 +330,116 @@ get_riot_userinfo(
 )
 ```
 
+#### account_info
+
+```py
+from league_client.rso_userinfo import parse_accountinfo
+from league_client.rso import ClientSession
+
+async def accountinfo():
+    async with ClientSession() as session:
+        csrf_token = await get_csrf_token(
+            session, proxy=None, proxy_user=None, proxy_auth=None
+        )
+        await parse_accountinfo(
+            session,
+            csrf_token,
+            proxy=None,
+            proxy_auth=None,
+            parse_pass=None,
+        )
+```
+
+
+#### parse_ledge_token
+
+```py
+from league_client.rso_ledge import parse_ledge_token
+from league_client.rso import ClientSession
+
+async def ledge_token():
+    async with ClientSession() as session:
+        csrf_token = await get_csrf_token(
+            session, proxy=None, proxy_user=None, proxy_auth=None
+        )
+        await parse_ledge_token(
+            session,
+            csrf_token,
+            proxy=None,
+            proxy_auth=None,
+            parse_pass=None,
+        )
+```
+
 #### rso_ledge
 
 ```py
 from league_client.rso_ledge import get_owned_skins
- get_owned_skins(
-    session,
-    account_info,
-    ledge_token,
-    proxy=None,
-    proxy_auth=None,
-)
-
-
+from league_client.rso import ClientSession
 from league_client.rso_ledge import get_honor_level
-get_honor_level(
-    session,
-    account_info,
-    ledge_token,
-    proxy=None,
-    proxy_auth=None,
-)
-
 from league_client.rso_ledge import get_rank_info
-get_rank_info(
-    session,
-    account_info,
-    ledge_token,
-    proxy=None,
-    proxy_auth=None,
-)
+
+async def rso_ledge():
+    async with ClientSession() as session:
+        owned_skins = await get_owned_skins(
+            session,
+            account_info,
+            ledge_token,
+            proxy=None,
+            proxy_auth=None,
+        )
+
+
+        honor_level= await get_honor_level(
+            session,
+            account_info,
+            ledge_token,
+            proxy=None,
+            proxy_auth=None,
+        )
+
+        rank_info = await get_rank_info(
+            session,
+            account_info,
+            ledge_token,
+            proxy=None,
+            proxy_auth=None,
+        )
 ```
 
 #### rso_userinfo
 
 ```py
+from league_client.rso import ClientSession
 from league_client.rso_userinfo import parse_userinfo
-parse_userinfo(
-    session,
-    access_token,
-    proxy=None,
-    proxy_auth=None,
-    parse_token=False,
-)
-```
 
-#### account_info
-
-```py
-from league_client.rso_userinfo import parse_accountinfo
-parse_accountinfo(
-    session,
-    csrf_token,
-    proxy=None,
-    proxy_auth=None,
-    parse_pass=None,
-)
+async def userinfo():
+    async with ClientSession() as session:
+        await parse_userinfo(
+            session,
+            access_token,
+            proxy=None,
+            proxy_auth=None,
+            parse_token=False,
+        )
 ```
 
 #### parse_blue_essence
 
 ```py
+from league_client.rso import ClientSession
 from league_client.utils import parse_blue_essence
-parse_blue_essence(
-    session,
-    region,
-    headers,
-    proxy=None,
-    proxy_auth=None,
-)
+from league_client.rso import HEADERS
+
+async def userinfo():
+    async with ClientSession() as session:
+        await parse_blue_essence(
+            session,
+            region,
+            headers=HEADERS,
+            proxy=None,
+            proxy_auth=None,
+        )
 ```
 
 #### parse_flash_key
