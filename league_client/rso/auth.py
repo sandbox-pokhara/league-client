@@ -1,7 +1,9 @@
+from typing import Optional
 from urllib.parse import parse_qs
 from urllib.parse import urlparse
 
 import httpx
+from httpx._types import ProxyTypes
 from pydantic import BaseModel
 
 from league_client.constants import AUTH_PARAMS
@@ -48,31 +50,33 @@ def process_redirect_url(redirect_url: str):
     }
 
 
-def get_pas_token(auth: Auth):
+def get_pas_token(auth: Auth, proxy: Optional[ProxyTypes] = None):
     h = HEADERS.copy()
     h["Authorization"] = f"{auth.token_type} {auth.access_token}"
     res = httpx.get(
         "https://riot-geo.pas.si.riotgames.com/pas/v1/service/chat",
         headers=h,
+        proxy=proxy,
     )
     res.raise_for_status()
     return res.text
 
 
-def get_entitlements_token(auth: Auth):
+def get_entitlements_token(auth: Auth, proxy: Optional[ProxyTypes] = None):
     h = HEADERS.copy()
     h["Authorization"] = f"{auth.token_type} {auth.access_token}"
     res = httpx.post(
         "https://entitlements.auth.riotgames.com/api/token/v1",
         headers=h,
+        proxy=proxy,
         json={"urn": "urn:entitlement:%"},
     )
     res.raise_for_status()
     return res.json()["entitlements_token"]
 
 
-def login_using_ssid(ssid: str):
-    with httpx.Client(verify=SSL_CONTEXT) as client:
+def login_using_ssid(ssid: str, proxy: Optional[ProxyTypes] = None):
+    with httpx.Client(verify=SSL_CONTEXT, proxy=proxy) as client:
         if ssid:
             client.cookies.set("ssid", ssid, domain="auth.riotgames.com")
         res = client.post(
@@ -90,8 +94,10 @@ def login_using_ssid(ssid: str):
         raise InvalidSessionError(res.text, res.status_code)
 
 
-def login_using_credentials(username: str, password: str):
-    with httpx.Client(verify=SSL_CONTEXT) as client:
+def login_using_credentials(
+    username: str, password: str, proxy: Optional[ProxyTypes] = None
+):
+    with httpx.Client(verify=SSL_CONTEXT, proxy=proxy) as client:
         res = client.post(
             "https://auth.riotgames.com/api/v1/authorization",
             params=AUTH_PARAMS,

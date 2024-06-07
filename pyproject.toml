@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "league-client"
-version = "2.0.0"
+version = "2.0.1"
 dependencies = ["httpx", "pydantic", "PyJWT"]
 requires-python = ">=3"
 authors = [{ name = "Pradish Bijukchhe", email = "pradishbijukchhe@gmail.com" }]
