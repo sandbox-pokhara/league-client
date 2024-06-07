@@ -1,9 +1,28 @@
 [build-system]
-requires = [
-    "setuptools>=42",
-    "wheel",
-]
+requires = ["setuptools>=70.0.0"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "league-client"
+version = "2.0.0"
+dependencies = ["httpx"]
+requires-python = ">=3"
+authors = [{ name = "Pradish Bijukchhe", email = "pradishbijukchhe@gmail.com" }]
+description = "league-client is a python package to communicate with riot servers"
+readme = "README.md"
+license = { file = "LICENSE" }
+keywords = []
+classifiers = ["Programming Language :: Python :: 3"]
+
+[project.urls]
+Homepage = "https://github.com/sandbox-pokhara/league-client"
+Issues = "https://github.com/sandbox-pokhara/league-client/issues"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.package-dir]
+"league_client" = "league_client"
 
 [tool.isort]
 line_length = 79
@@ -12,8 +31,6 @@ force_single_line = true
 [tool.black]
 line-length = 79
 preview = true
-extend-exclude = '''
-/(
-  | migrations
-)/
-'''
+
+[tool.pyright]
+typeCheckingMode = "strict"
