@@ -152,6 +152,5 @@ cython_debug/
 #.idea/
 
 # Project
-logs/
 .vscode/
 test.py

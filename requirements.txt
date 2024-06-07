@@ -1,1 +1,3 @@
 httpx
+pydantic
+PyJWT
