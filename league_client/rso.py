@@ -37,6 +37,9 @@ class ClientSession(aiohttp.ClientSession):
         ctx = ssl.create_default_context()
         ctx.minimum_version = ssl.TLSVersion.TLSv1_3
         ctx.set_ciphers(":".join(FORCED_CIPHERS))
+        # fix certificate verify failed: unable to get local issuer certificate (_ssl.c:1006)
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
         super().__init__(
             *args,
             **kwargs,
