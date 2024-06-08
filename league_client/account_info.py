@@ -9,6 +9,7 @@ from league_client.exceptions import ConnectedAccountsError
 from league_client.exceptions import RiotUserInfoError
 from league_client.exceptions import TimeBanError
 from league_client.riot_userinfo import get_riot_userinfo
+from league_client.rso import ClientSession
 from league_client.rso import get_basic_auth
 from league_client.rso_ledge import get_honor_level
 from league_client.rso_ledge import get_loot
@@ -66,7 +67,7 @@ async def get_account_info(
     mythic_essence = None
     userinfo = {}
     proxy_auth = get_basic_auth(proxy_user, proxy_pass)
-    async with aiohttp.ClientSession() as session:
+    async with ClientSession() as session:
         tokens = await get_tokens(
             session,
             username,
@@ -104,7 +105,7 @@ async def get_account_info(
                 "Account has one or more restrictions.",
                 code="ACCOUNT_RESTRICTED",
             )
-        async with aiohttp.ClientSession() as session:
+        async with ClientSession() as session:
             tokens = await get_tokens(
                 session,
                 username,
@@ -246,7 +247,7 @@ async def get_account_details(
     """
     return_data = {}
     proxy_auth = get_basic_auth(proxy_user, proxy_pass)
-    async with aiohttp.ClientSession() as session:
+    async with ClientSession() as session:
         tokens = await get_tokens(
             session,
             username,
@@ -297,7 +298,7 @@ async def get_account_details(
             "Account has one or more restrictions.",
             code="ACCOUNT_RESTRICTED",
         )
-    async with aiohttp.ClientSession() as session:
+    async with ClientSession() as session:
         tokens = await get_tokens(
             session,
             username,
@@ -495,7 +496,7 @@ async def get_ban_stats(
         LeagueClientError (see exceptions.py)
     """
     proxy_auth = get_basic_auth(proxy_user, proxy_pass)
-    async with aiohttp.ClientSession() as session:
+    async with ClientSession() as session:
         tokens = await get_tokens(
             session,
             username,

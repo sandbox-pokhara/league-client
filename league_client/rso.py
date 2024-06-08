@@ -2,8 +2,6 @@ import ssl
 
 import aiohttp
 
-from .logger import logger
-
 # https://developers.cloudflare.com/ssl/ssl-tls/cipher-suites/
 FORCED_CIPHERS = [
     "ECDHE-ECDSA-AES256-GCM-SHA384",
@@ -36,14 +34,14 @@ HEADERS = {
 
 class ClientSession(aiohttp.ClientSession):
     def __init__(self, *args, **kwargs):
-        ctx = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
-        # ctx.minimum_version = ssl.TLSVersion.TLSv1_3
+        ctx = ssl.create_default_context()
+        ctx.minimum_version = ssl.TLSVersion.TLSv1_3
         ctx.set_ciphers(":".join(FORCED_CIPHERS))
         super().__init__(
             *args,
             **kwargs,
             cookie_jar=aiohttp.CookieJar(),
-            connector=aiohttp.TCPConnector(verify_ssl=False)
+            connector=aiohttp.TCPConnector(ssl=ctx)
         )
 
 

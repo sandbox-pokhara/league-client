@@ -1,7 +1,6 @@
-import aiohttp
-
 from league_client.password import get_csrf_token
 from league_client.rso import HEADERS
+from league_client.rso import ClientSession
 from league_client.rso import get_basic_auth
 from league_client.rso_auth import parsing_auth_code
 from league_client.rso_auth import rso_authorize
@@ -40,7 +39,7 @@ async def redirect(session, url, proxy, proxy_user=None, proxy_pass=None):
 async def get_riot_userinfo(
     username, password, proxy=None, proxy_user=None, proxy_pass=None
 ):
-    async with aiohttp.ClientSession() as session:
+    async with ClientSession() as session:
         proxy_auth = get_basic_auth(proxy_user, proxy_pass)
         if not await parsing_auth_code(
             session, accountodactyl, proxy, proxy_user, proxy_pass
