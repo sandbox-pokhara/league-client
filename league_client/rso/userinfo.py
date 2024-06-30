@@ -39,3 +39,7 @@ def get_puuid(decoded_access_token: dict[str, Any]) -> str:
 
 def get_region(decoded_access_token: dict[str, Any]) -> str:
     return decoded_access_token["dat"]["r"]
+
+
+def get_account_id(decoded_access_token: dict[str, Any]) -> str:
+    return decoded_access_token["dat"]["u"]
