@@ -79,7 +79,7 @@ HEADERS = {
 }
 
 
-AUTH_PARAMS = {
+RIOT_CLIENT_AUTH_PARAMS = {
     "acr_values": "",
     "claims": "",
     "client_id": "riot-client",
@@ -89,4 +89,16 @@ AUTH_PARAMS = {
     "redirect_uri": "http://localhost/redirect",
     "response_type": "token id_token",
     "scope": "openid link ban lol_region account",
+}
+
+LEAGUE_CLIENT_AUTH_PARAMS = {
+    "acr_values": "",
+    "claims": "",
+    "client_id": "lol",
+    "code_challenge": "",
+    "code_challenge_method": "",
+    "nonce": "SYXugqaAL5z7U7iioaTW5Q",
+    "redirect_uri": "http://localhost/redirect",
+    "response_type": "token id_token",
+    "scope": "openid link ban lol_region lol summoner offline_access",
 }

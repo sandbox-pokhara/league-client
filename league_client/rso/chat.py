@@ -1,15 +1,12 @@
-import jwt
-
 from league_client.constants import CHAT_AFFINITY_DOMAINS
 from league_client.constants import CHAT_HOSTS
 from league_client.exceptions import AffnityDomainNotFound
 from league_client.exceptions import ChatHostNotFound
+from league_client.rso.utils import decode_token
 
 
 def get_chat_affinity_server(pas_token: str):
-    data = jwt.decode(  # type: ignore
-        pas_token, algorithms=["RS256"], options={"verify_signature": False}
-    )
+    data = decode_token(pas_token)
     affinity = data["affinity"]
     if affinity not in CHAT_AFFINITY_DOMAINS:
         raise AffnityDomainNotFound(affinity)
@@ -17,9 +14,7 @@ def get_chat_affinity_server(pas_token: str):
 
 
 def get_chat_host(pas_token: str):
-    data = jwt.decode(  # type: ignore
-        pas_token, algorithms=["RS256"], options={"verify_signature": False}
-    )
+    data = decode_token(pas_token)
     affinity = data["affinity"]
     if affinity not in CHAT_HOSTS:
         raise ChatHostNotFound(affinity)
