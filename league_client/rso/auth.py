@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Optional
 from urllib.parse import parse_qs
 from urllib.parse import urlparse
@@ -81,16 +82,17 @@ def get_entitlements_token(auth: Auth, proxy: Optional[ProxyTypes] = None):
 
 def get_login_queue_token(
     auth_lol: AuthLol,
-    region: str,
-    player_platform_url: str,
     userinfo_token: str,
     entitlements_token: str,
+    region: str,
+    player_platform_url: str,
     proxy: Optional[ProxyTypes] = None,
 ):
     h = HEADERS.copy()
     h["Authorization"] = f"{auth_lol.token_type} {auth_lol.access_token}"
     res = httpx.post(
-        f"{player_platform_url}/login-queue/v2/login/products/lol/regions/{region}",
+        f"{player_platform_url}"
+        f"/login-queue/v2/login/products/lol/regions/{region}",
         headers=h,
         json={
             "clientName": "lcu",
@@ -104,10 +106,10 @@ def get_login_queue_token(
 
 
 def get_ledge_token(
+    login_queue_token: str,
+    puuid: str,
     region: str,
     player_platform_url: str,
-    puuid: str,
-    login_queue_token: str,
     proxy: Optional[ProxyTypes] = None,
 ):
     h = HEADERS.copy()
@@ -125,6 +127,80 @@ def get_ledge_token(
     )
     res.raise_for_status()
     return res.json()
+
+
+class InventoryTypes(str, Enum):
+    event_pass = "EVENT_PASS"
+    champion_skin = "CHAMPION_SKIN"
+
+
+def get_inventory_token(
+    ledge_token: str,
+    puuid: str,
+    account_id: str,
+    region: str,
+    service_location: str,
+    ledge_url: str,
+    inventory_type: InventoryTypes,
+    proxy: Optional[ProxyTypes] = None,
+):
+    h = HEADERS.copy()
+    h["Authorization"] = f"Bearer {ledge_token}"
+    res = httpx.get(
+        f"{ledge_url}/lolinventoryservice-ledge/v1/inventories/simple",
+        headers=h,
+        params={
+            "puuid": puuid,
+            "accountId": account_id,
+            "location": service_location,
+            "inventoryTypes": inventory_type,
+        },
+        proxy=proxy,
+    )
+    res.raise_for_status()
+    return res.json()["data"]["itemsJwt"]
+
+
+def get_event_inventory_token(
+    ledge_token: str,
+    puuid: str,
+    account_id: str,
+    region: str,
+    service_location: str,
+    ledge_url: str,
+    proxy: Optional[ProxyTypes] = None,
+):
+    return get_inventory_token(
+        ledge_token,
+        puuid,
+        account_id,
+        region,
+        service_location,
+        ledge_url,
+        InventoryTypes.event_pass,
+        proxy,
+    )
+
+
+def get_champion_inventory_token(
+    ledge_token: str,
+    puuid: str,
+    account_id: str,
+    region: str,
+    service_location: str,
+    ledge_url: str,
+    proxy: Optional[ProxyTypes] = None,
+):
+    return get_inventory_token(
+        ledge_token,
+        puuid,
+        account_id,
+        region,
+        service_location,
+        ledge_url,
+        InventoryTypes.champion_skin,
+        proxy,
+    )
 
 
 def login_using_ssid(
