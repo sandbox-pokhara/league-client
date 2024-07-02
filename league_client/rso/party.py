@@ -38,6 +38,7 @@ def get_party_data(
             "puuid": puuid,
             "registration": {
                 "experiments": {},
+                # https://sieve.services.riotcdn.net/api/v1/products/lol/version-sets/EUW1
                 "gameClientVersion": "14.13.5989749+branch.releases-14-13.code.public.content.release.anticheat.vanguard",
                 "inventoryToken": None,
                 "inventoryTokens": [
