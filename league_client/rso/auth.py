@@ -1,4 +1,3 @@
-from typing import List
 from typing import Optional
 from urllib.parse import parse_qs
 from urllib.parse import urlparse
@@ -11,7 +10,6 @@ from league_client.constants import RIOT_CLIENT_AUTH_PARAMS
 from league_client.constants import SSL_CONTEXT
 from league_client.exceptions import AuthFailureError
 from league_client.exceptions import InvalidSessionError
-from league_client.rso.constants import InventoryTypes
 from league_client.rso.utils import decode_token
 
 
@@ -121,97 +119,6 @@ def get_ledge_token(
     )
     res.raise_for_status()
     return res.json()
-
-
-def get_inventory_token(
-    ledge_token: str,
-    puuid: str,
-    account_id: int,
-    service_location: str,
-    ledge_url: str,
-    inventory_types: List[InventoryTypes],
-    proxy: Optional[ProxyTypes] = None,
-):
-    h = HEADERS.copy()
-    h["Authorization"] = f"Bearer {ledge_token}"
-    res = httpx.get(
-        f"{ledge_url}/lolinventoryservice-ledge/v1/inventories/simple",
-        headers=h,
-        params={
-            "puuid": puuid,
-            "accountId": account_id,
-            "location": service_location,
-            "inventoryTypes": inventory_types,
-        },
-        proxy=proxy,
-    )
-    res.raise_for_status()
-    return res.json()["data"]["itemsJwt"]
-
-
-def get_inventory_token_v2(
-    ledge_token: str,
-    puuid: str,
-    account_id: int,
-    service_location: str,
-    ledge_url: str,
-    inventory_types: List[InventoryTypes],
-    proxy: Optional[ProxyTypes] = None,
-):
-    h = HEADERS.copy()
-    h["Authorization"] = f"Bearer {ledge_token}"
-    res = httpx.get(
-        f"{ledge_url}/lolinventoryservice-ledge/v2/inventoriesWithLoyalty",
-        headers=h,
-        params={
-            "puuid": puuid,
-            "accountId": account_id,
-            "location": service_location,
-            "inventoryTypes": inventory_types,
-            "signed": True,
-        },
-        proxy=proxy,
-    )
-    res.raise_for_status()
-    return res.json()["data"]["itemsJwt"]
-
-
-def get_event_inventory_token(
-    ledge_token: str,
-    puuid: str,
-    account_id: int,
-    service_location: str,
-    ledge_url: str,
-    proxy: Optional[ProxyTypes] = None,
-):
-    return get_inventory_token(
-        ledge_token,
-        puuid,
-        account_id,
-        service_location,
-        ledge_url,
-        [InventoryTypes.event_pass],
-        proxy,
-    )
-
-
-def get_champion_inventory_token(
-    ledge_token: str,
-    puuid: str,
-    account_id: int,
-    service_location: str,
-    ledge_url: str,
-    proxy: Optional[ProxyTypes] = None,
-):
-    return get_inventory_token(
-        ledge_token,
-        puuid,
-        account_id,
-        service_location,
-        ledge_url,
-        [InventoryTypes.champion_skin],
-        proxy,
-    )
 
 
 def get_summoner_token(
