@@ -102,3 +102,23 @@ LEAGUE_CLIENT_AUTH_PARAMS = {
     "response_type": "token id_token",
     "scope": "openid link ban lol_region lol summoner offline_access",
 }
+
+# https://developers.cloudflare.com/ssl/ssl-tls/cipher-suites/
+FORCED_CIPHERS = [
+    "ECDHE-ECDSA-AES256-GCM-SHA384",
+    "ECDHE-ECDSA-AES128-GCM-SHA256",
+    "ECDHE-ECDSA-CHACHA20-POLY1305",
+    "ECDHE-RSA-AES128-GCM-SHA256",
+    "ECDHE-RSA-CHACHA20-POLY1305",
+    "ECDHE-RSA-AES128-SHA256",
+    "ECDHE-RSA-AES128-SHA",
+    "ECDHE-RSA-AES256-SHAECDHE-ECDSA-AES128-SHA256",
+    "ECDHE-ECDSA-AES128-SHA",
+    "ECDHE-ECDSA-AES256-SHA",
+    "ECDHE+AES128",
+    "ECDHE+AES256",
+    "ECDHE+3DES",
+    "RSA+AES128",
+    "RSA+AES256",
+    "RSA+3DES",
+]
