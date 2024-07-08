@@ -1,4 +1,6 @@
 import json
+from typing import Dict
+from typing import List
 
 import httpx
 
@@ -17,7 +19,7 @@ def get_inventory_by_type(connection: httpx.Client, inventory_type: str):
         return None
 
 
-def get_is_chroma(catalog, item_id: str) -> bool:
+def get_is_chroma(catalog: List[Dict[str, str]], item_id: str) -> bool:
     for i in catalog:
         if i["itemId"] == item_id:
             return i["subInventoryType"] == "RECOLOR"

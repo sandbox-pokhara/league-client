@@ -1,3 +1,7 @@
+from typing import Any
+from typing import Dict
+from typing import List
+
 import httpx
 
 from league_client.logger import logger
@@ -15,11 +19,13 @@ def get_match_history(connection: httpx.Client, puuid: str):
         return None
 
 
-def get_participants(connection: httpx.Client, puuid: str, summoner_id: str):
+def get_participants(
+    connection: httpx.Client, puuid: str, summoner_id: str
+) -> List[Dict[str, Any]]:
     history = get_match_history(connection, puuid)
     if history is None:
         return []
-    data = []
+    data: List[Dict[str, Any]] = []
     for game in history["games"]["games"]:
         pid = None
         for p in game["participantIdentities"]:

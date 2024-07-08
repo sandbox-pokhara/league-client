@@ -1,4 +1,7 @@
 import time
+from typing import Any
+from typing import Dict
+from typing import List
 
 import httpx
 
@@ -69,7 +72,9 @@ def open_chest_by_loot_id(
 
 
 def open_chest_loots(
-    connection: httpx.Client, loots, requires_key: bool = True
+    connection: httpx.Client,
+    loots: List[Dict[str, Any]],
+    requires_key: bool = True,
 ):
     for loot in loots:
         count: int = loot["count"]

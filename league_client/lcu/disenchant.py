@@ -1,4 +1,7 @@
 import json
+from typing import Any
+from typing import Dict
+from typing import List
 
 import httpx
 
@@ -8,7 +11,9 @@ from league_client.lcu.loot import get_ward_skins
 from league_client.logger import logger
 
 
-def get_disenchant_recipe(connection: httpx.Client, loot_id: str):
+def get_disenchant_recipe(
+    connection: httpx.Client, loot_id: str
+) -> Dict[str, str] | None:
     try:
         res = connection.get(f"/lol-loot/v1/recipes/initial-item/{loot_id}")
         res.raise_for_status()
@@ -25,7 +30,7 @@ def get_disenchant_recipe(connection: httpx.Client, loot_id: str):
         return None
 
 
-def disenchant(connection: httpx.Client, loot):
+def disenchant(connection: httpx.Client, loot: List[Dict[str, Any]]):
     for data in loot:
         name = get_loot_name(data)
         recipe = get_disenchant_recipe(connection, data["lootId"])

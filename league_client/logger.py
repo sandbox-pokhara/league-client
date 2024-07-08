@@ -3,13 +3,18 @@ import os
 import sys
 from logging import StreamHandler
 from logging.handlers import RotatingFileHandler
+from typing import Optional
 
 # register in pylance auto import
 __all__ = ["logger"]
 
 
 def create_logger(
-    file_path, name, formatter=None, stream=True, rotating_file=True
+    file_path: str,
+    name: str,
+    formatter: Optional[logging.Formatter] = None,
+    stream: bool = True,
+    rotating_file: bool = True,
 ):
     dirname = os.path.dirname(file_path)
     os.makedirs(dirname, exist_ok=True)

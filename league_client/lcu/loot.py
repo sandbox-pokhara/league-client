@@ -1,5 +1,7 @@
 import json
 import re
+from typing import Any
+from typing import Dict
 from typing import List
 from typing import Optional
 
@@ -11,7 +13,7 @@ SKIN_SHARD_RE = "CHAMPION_SKIN_RENTAL_[0-9]+"
 SKIN_SHARD_PERMA_RE = "CHAMPION_SKIN_[0-9]+"
 
 
-def get_loot(connection: httpx.Client):
+def get_loot(connection: httpx.Client) -> List[Dict[str, Any]]:
     try:
         res = connection.get("/lol-loot/v1/player-loot")
         res.raise_for_status()
@@ -23,7 +25,7 @@ def get_loot(connection: httpx.Client):
         return []
 
 
-def get_player_loot_map(connection: httpx.Client):
+def get_player_loot_map(connection: httpx.Client) -> Dict[str, Any]:
     try:
         res = connection.get("/lol-loot/v1/player-loot-map/")
         res.raise_for_status()
@@ -45,7 +47,9 @@ def get_loot_count(connection: httpx.Client, loot_id: str) -> int:
     return filtered_loot[0]["count"]
 
 
-def get_loot_by_id(connection: httpx.Client, loot_id: str):
+def get_loot_by_id(
+    connection: httpx.Client, loot_id: str
+) -> List[Dict[str, Any]]:
     try:
         res = connection.get(f"/lol-loot/v1/player-loot/{loot_id}")
         res.raise_for_status()
@@ -57,7 +61,7 @@ def get_loot_by_id(connection: httpx.Client, loot_id: str):
         return []
 
 
-def get_loot_name(loot) -> str:
+def get_loot_name(loot: Dict[str, str]) -> str:
     if loot["localizedName"] != "":
         return loot["localizedName"]
     if loot["itemDesc"] != "":
@@ -89,7 +93,7 @@ def get_loot_by_pattern(
         return None
 
 
-def get_eternals(connection: httpx.Client):
+def get_eternals(connection: httpx.Client) -> List[Dict[str, str]]:
     loot = get_loot(connection)
     return [l for l in loot if l["type"] == "STATSTONE_SHARD"]
 
