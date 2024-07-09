@@ -32,7 +32,6 @@ from league_client.rcu.auth import get_is_authorized
 from league_client.rcu.auth import get_is_country_region_missing
 from league_client.rcu.auth import get_rq_data_and_site_key
 from league_client.shortcuts import logger
-from league_client.shortcuts.login import launch_league
 from league_client.shortcuts.logout import logout
 from league_client.shortcuts.process import is_running
 from league_client.shortcuts.process import open_riot_client
@@ -64,7 +63,9 @@ def wait_until_patched(connection: LeagueConnection, timeout: float = 7200):
         try:
             time.sleep(10)
             time_elapsed = time.time() - start_time
-            logger.info(f"Patching riot client. Time elapsed: {int(time_elapsed)}s.")
+            logger.info(
+                f"Patching riot client. Time elapsed: {int(time_elapsed)}s."
+            )
             if time_elapsed > timeout:
                 return False
             res = connection.get("/rnet-lifecycle/v1/product-context-phase")
