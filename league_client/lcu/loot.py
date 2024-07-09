@@ -36,9 +36,7 @@ def get_loot_by_pattern(connection: LeagueConnection, pattern: str):
     res = connection.get("/lol-loot/v1/player-loot-map")
     res.raise_for_status()
     data = [
-        s["storeItemId"]
-        for s in res.json().values()
-        if re.fullmatch(pattern, s["lootId"])
+        s for s in res.json().values() if re.fullmatch(pattern, s["lootId"])
     ]
     return data
 
@@ -58,21 +56,20 @@ def get_champion_shards(connection: LeagueConnection):
     return [l for l in loot if l["type"] in ["CHAMPION", "CHAMPION_RENTAL"]]
 
 
-def get_orange_essence(connection: LeagueConnection):
-    res = connection.get("/lol-loot/v1/player-loot-map")
-    res.raise_for_status()
-    loot_map = res.json()
-    if "CURRENCY_cosmetic" not in loot_map:
-        return 0
-    return loot_map["CURRENCY_cosmetic"]["count"]
-
-
 def get_skin_shards(connection: LeagueConnection):
     return get_loot_by_pattern(connection, SKIN_SHARD_RE)
 
 
 def get_perma_skin_shards(connection: LeagueConnection):
     return get_loot_by_pattern(connection, SKIN_SHARD_PERMA_RE)
+
+
+def get_skin_shards_ids(connection: LeagueConnection):
+    return [s["storeItemId"] for s in get_skin_shards(connection)]
+
+
+def get_perma_skin_shards_ids(connection: LeagueConnection):
+    return [s["storeItemId"] for s in get_perma_skin_shards(connection)]
 
 
 def get_key_fragment_count(connection: LeagueConnection) -> int:
@@ -97,3 +94,7 @@ def get_masterwork_chest_count(connection: LeagueConnection) -> int:
 
 def get_blue_essence_count(connection: LeagueConnection) -> int:
     return get_loot_count(connection, "CURRENCY_champion")
+
+
+def get_orange_essence_count(connection: LeagueConnection):
+    return get_loot_count(connection, "CURRENCY_cosmetic")
