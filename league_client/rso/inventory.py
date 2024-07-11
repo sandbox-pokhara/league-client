@@ -27,7 +27,7 @@ def _inventory_data_from_url(
             "puuid": puuid,
             "accountId": account_id,
             "location": service_location,
-            "inventoryTypes": inventory_types,
+            "inventoryTypes": [item.value for item in inventory_types],
             "signed": True,
         },
         proxy=proxy,

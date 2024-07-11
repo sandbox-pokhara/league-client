@@ -2,173 +2,265 @@ import re
 import time
 import uuid
 from typing import Any
+from typing import Optional
 
 import httpx
+from httpx._types import ProxyTypes
 
 from league_client.constants import HEADERS
+from league_client.rso.constants import LootNameTypes
 from league_client.rso.loot import get_champion_mastery_chest_count
 from league_client.rso.loot import get_generic_chest_count
 from league_client.rso.loot import get_key_count
 from league_client.rso.loot import get_key_fragment_count
-from league_client.rso.loot import get_loot
 from league_client.rso.loot import get_masterwork_chest_count
-from league_client.rso.models import RSOSession
+from league_client.rso.loot import get_mythic_essence_count
 
 
 def craft(
-    session: RSOSession,
+    ledge_token: str,
+    ledge_url: str,
+    puuid: str,
     recipe_name: str,
-    loot_names: list[str],
+    loot_names: list[LootNameTypes],
     repeat: int = 1,
+    proxy: Optional[ProxyTypes] = None,
 ):
-    """Craft or open an chest item"""
+    """Craft or open a chest item"""
     h = HEADERS.copy()
-    h["Authorization"] = f"Bearer {session.ledge_token}"
+    h["Authorization"] = f"Bearer {ledge_token}"
 
     data = {
         "clientId": "LolClient-LEdge",
         "lootNameRefIds": [
-            {"lootName": loot_name, "refId": ""} for loot_name in loot_names
+            {"lootName": item.value, "refId": ""} for item in loot_names
         ],
         "recipeName": recipe_name,
         "repeat": repeat,
         "transactionId": str(uuid.uuid4()),
     }
-    print(data)
-    url = session.get_ledge_url(f"loot/v2/player/{session.puuid}/craft")
     res = httpx.post(
-        url,
+        f"{ledge_url}/loot/v2/player/{puuid}/craft",
         headers=h,
         json=data,
-        proxy=session.proxy,
+        proxy=proxy,
     )
     res.raise_for_status()
     return res.json()
 
 
-def craft_key_from_key_fragments(session: RSOSession, repeat: int = 1):
+def craft_key_from_key_fragments(
+    ledge_token: str,
+    ledge_url: str,
+    puuid: str,
+    repeat: int = 1,
+    proxy: Optional[ProxyTypes] = None,
+):
     return craft(
-        session,
+        ledge_token,
+        ledge_url,
+        puuid,
         "MATERIAL_key_fragment_forge",
-        ["MATERIAL_key_fragment"],
+        [LootNameTypes.key_fragment],
         repeat,
+        proxy,
     )
 
 
-def craft_generic_chests(session: RSOSession, repeat: int = 1):
-    craft(
-        session,
+def craft_generic_chests(
+    ledge_token: str,
+    ledge_url: str,
+    puuid: str,
+    repeat: int = 1,
+    proxy: Optional[ProxyTypes] = None,
+):
+    return craft(
+        ledge_token,
+        ledge_url,
+        puuid,
         "CHEST_generic_OPEN",
-        ["CHEST_generic", "MATERIAL_key"],
+        [LootNameTypes.generic_chest, LootNameTypes.key],
         repeat,
+        proxy,
     )
 
 
-def craft_champion_mastery_chest(session: RSOSession, repeat: int = 1):
-    craft(
-        session,
+def craft_champion_mastery_chest(
+    ledge_token: str,
+    ledge_url: str,
+    puuid: str,
+    repeat: int = 1,
+    proxy: Optional[ProxyTypes] = None,
+):
+    return craft(
+        ledge_token,
+        ledge_url,
+        puuid,
         "CHEST_champion_mastery_OPEN",
-        ["CHEST_champion_mastery", "MATERIAL_key"],
+        [LootNameTypes.champion_mastery_chest, LootNameTypes.key],
         repeat,
+        proxy,
     )
 
 
-def craft_keys_and_generic_chests(session: RSOSession, retry_limit: int = 10):
+def craft_keys_and_generic_chests(
+    ledge_token: str,
+    ledge_url: str,
+    puuid: str,
+    loot_data: dict[str, Any],
+    retry_limit: int = 10,
+    proxy: Optional[ProxyTypes] = None,
+):
     for _ in range(retry_limit):
-        loot = get_loot(session)
-        if loot == []:
-            return
+        forgable_keys = int(get_key_fragment_count(loot_data) / 3)
+        key_count = get_key_count(loot_data)
+        chest_count = get_generic_chest_count(loot_data)
+        chest_count += get_champion_mastery_chest_count(loot_data)
 
-        forgable_keys = int(get_key_fragment_count(loot) / 3)
-        key_count = get_key_count(loot)
-        chest_count = get_generic_chest_count(loot)
-        chest_count += get_champion_mastery_chest_count(loot)
         if (forgable_keys == 0 and key_count == 0) or chest_count == 0:
             return
         if forgable_keys > 0:
-            craft_key_from_key_fragments(session, forgable_keys)
+            craft_key_from_key_fragments(
+                ledge_token, ledge_url, puuid, forgable_keys, proxy
+            )
             continue
 
         if min(key_count, chest_count) > 0:
-            craft_generic_chests(session)
-            craft_champion_mastery_chest(session)
+            craft_generic_chests(ledge_token, ledge_url, puuid, 1, proxy)
+            craft_champion_mastery_chest(
+                ledge_token, ledge_url, puuid, 1, proxy
+            )
 
 
 def craft_keys_and_masterwork_chests(
-    session: RSOSession, retry_limit: int = 10
+    ledge_token: str,
+    ledge_url: str,
+    puuid: str,
+    loot_data: dict[str, Any],
+    retry_limit: int = 10,
+    proxy: Optional[ProxyTypes] = None,
 ):
     for _ in range(retry_limit):
-        loot = get_loot(session)
-        if loot == []:
-            return
-
-        forgable_keys = int(get_key_fragment_count(loot) / 3)
-        key_count = get_key_count(loot)
-        chest_count = get_masterwork_chest_count(loot)
+        forgable_keys = int(get_key_fragment_count(loot_data) / 3)
+        key_count = get_key_count(loot_data)
+        chest_count = get_masterwork_chest_count(loot_data)
 
         if (forgable_keys == 0 and key_count == 0) or chest_count == 0:
             return
         if forgable_keys > 0:
-            craft_key_from_key_fragments(session, forgable_keys)
+            craft_key_from_key_fragments(
+                ledge_token, ledge_url, puuid, forgable_keys, proxy
+            )
             continue
 
         if min(key_count, chest_count) > 0:
-            craft_generic_chests(session)
-            craft_champion_mastery_chest(session)
+            craft_generic_chests(ledge_token, ledge_url, puuid, 1, proxy)
+            craft_champion_mastery_chest(
+                ledge_token, ledge_url, puuid, 1, proxy
+            )
 
 
-def craft_chest_by_loot_id(
-    session: RSOSession,
-    loot_id: str,
+def craft_chest_by_loot_name(
+    ledge_token: str,
+    ledge_url: str,
+    puuid: str,
+    loot_name: LootNameTypes,
     requires_key: bool = False,
     repeat: int = 1,
+    proxy: Optional[ProxyTypes] = None,
 ):
     """Craft or open an chest item by loot id"""
-    loot_names = [loot_id]
+    loot_names = [loot_name]
     if requires_key:
-        loot_names.append("MATERIAL_key")
-    return craft(session, f"{loot_id}_OPEN", loot_names, repeat)
+        loot_names.append(LootNameTypes.key)
+    return craft(
+        ledge_token,
+        ledge_url,
+        puuid,
+        f"{loot_name}_OPEN",
+        loot_names,
+        repeat,
+        proxy,
+    )
 
 
 def craft_chest_loots(
-    session: RSOSession,
-    loots: list[dict[str, Any]],
+    ledge_token: str,
+    ledge_url: str,
+    puuid: str,
+    loot_data: dict[str, Any],
     requires_key: bool = True,
+    delay: int = 1,
+    proxy: Optional[ProxyTypes] = None,
 ):
-    for loot in loots:
+    key_count = 0
+    if requires_key:
+        key_count: int = get_key_count(loot_data)
+    loot: dict[str, Any]
+    for loot in loot_data["playerLoot"]:
         count: int = loot["count"]
+        if loot["lootName"] not in [item.value for item in LootNameTypes]:
+            # prevent error, by skipping
+            continue
         if requires_key:
-            key_count: int = get_key_count(loots)
             if key_count == 0:
                 return
             count: int = min(count, key_count)
-        craft_chest_by_loot_id(
-            session, loot["lootName"], requires_key=requires_key, repeat=count
+        craft_chest_by_loot_name(
+            ledge_token,
+            ledge_url,
+            puuid,
+            LootNameTypes(loot["lootName"]),
+            requires_key,
+            count,
+            proxy,
         )
-        time.sleep(1)
+        if delay > 0:
+            time.sleep(delay)
 
 
-def craft_champion_capsules(session: RSOSession):
-    loot = get_loot(session)
-
+def craft_champion_capsules(
+    ledge_token: str,
+    ledge_url: str,
+    puuid: str,
+    loot_data: dict[str, Any],
+    delay: int = 1,
+    proxy: Optional[ProxyTypes] = None,
+):
     champion_capsules = [
-        l
-        for l in loot
+        item
+        for item in loot_data["playerLoot"]
         if re.fullmatch(
-            "CHEST_((?!(generic|224|champion_mastery)).)*", l["lootName"]
+            "CHEST_((?!(generic|224|champion_mastery)).)*", item["lootName"]
         )
     ]
-    craft_chest_loots(session, champion_capsules, requires_key=False)
+    craft_chest_loots(
+        ledge_token,
+        ledge_url,
+        puuid,
+        {"playerLoot": champion_capsules},
+        False,
+        delay,
+        proxy,
+    )
 
 
-def craft_mythic_essence_into_skin_shard(session: RSOSession):
-    data = get_loot(session)
-    loot_result = [m for m in data if m["lootName"] == "CURRENCY_mythic"]
-    if loot_result == []:
-        return
-    count = loot_result[0]["count"]
+def craft_mythic_essence_into_skin_shard(
+    ledge_token: str,
+    ledge_url: str,
+    puuid: str,
+    loot_data: dict[str, Any],
+    proxy: Optional[ProxyTypes] = None,
+):
+    count: int = get_mythic_essence_count(loot_data)
     if count < 10:
         return
     return craft(
-        session, "CURRENCY_mythic_forge_13", ["CURRENCY_mythic"], count // 10
+        ledge_token,
+        ledge_url,
+        puuid,
+        "CURRENCY_mythic_forge_13",
+        [LootNameTypes.mythic_essence],
+        count // 10,
+        proxy,
     )

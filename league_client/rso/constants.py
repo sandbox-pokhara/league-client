@@ -71,3 +71,16 @@ class InventoryTypes(str, Enum):
     skin_augment = "SKIN_AUGMENT"
     skin_border = "SKIN_BORDER"
     queue_entry = "QUEUE_ENTRY"
+
+
+class LootNameTypes(str, Enum):
+    key_fragment = "MATERIAL_key_fragment"
+    key = "MATERIAL_key"
+    generic_chest = "CHEST_generic"
+    champion_mastery_chest = "CHEST_champion_mastery"
+    masterwork_chest = "CHEST_224"
+    blue_essence = "CURRENCY_champion"
+    orange_essence = "CURRENCY_cosmetic"
+    mythic_essence = "CURRENCY_mythic"
+    chest_new_player = "CHEST_new_player"
+    chest_day_one = "CHEST_day_one"

@@ -373,6 +373,13 @@ orangeEssence = item2.count
 mythicEssence = item3.count
 ```
 
+```
+loot_data = get_loot_data(...)
+get_blue_essence_count(loot_data)
+get_orange_essence_count(loot_data)
+get_mythic_essence_count(loot_data)
+```
+
 - Account Skins
 
 Owned skins
