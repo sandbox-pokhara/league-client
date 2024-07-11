@@ -1,41 +1,89 @@
+from typing import Any
+from typing import Optional
+
+from httpx._types import ProxyTypes
+
+from league_client.rso.constants import LootNameTypes
 from league_client.rso.craft import craft
-from league_client.rso.loot import get_loot
-from league_client.rso.models import RSOSession
 
 
-def disenchant_champion_shards(session: RSOSession):
-    loot = get_loot(session)
+def disenchant_champion_shards(
+    ledge_token: str,
+    ledge_url: str,
+    puuid: str,
+    loot_data: dict[str, Any],
+    proxy: Optional[ProxyTypes] = None,
+):
     champion_shards = [
-        l for l in loot if l["type"] in ["CHAMPION", "CHAMPION_RENTAL"]
+        item
+        for item in loot_data["playerLoot"]  # ? ["lootItemList"]["lootItems"]
+        if item["type"] in ["CHAMPION", "CHAMPION_RENTAL"]
     ]
     for shard in champion_shards:
         recipe_name = f"{shard['type'].split('_')[0]}_disenchant"
+        if shard["lootName"] not in [item.value for item in LootNameTypes]:
+            # prevent error, by skipping
+            continue
         craft(
-            session,
+            ledge_token,
+            ledge_url,
+            puuid,
             recipe_name,
-            [shard["lootName"]],
+            [LootNameTypes(shard["lootName"])],
+            1,
+            proxy,
         )
 
 
-def disenchant_eternals(session: RSOSession):
-    loot = get_loot(session)
-    eternals = [l for l in loot if l["type"] == "STATSTONE_SHARD"]
+def disenchant_eternals(
+    ledge_token: str,
+    ledge_url: str,
+    puuid: str,
+    loot_data: dict[str, Any],
+    proxy: Optional[ProxyTypes] = None,
+):
+    eternals = [
+        item
+        for item in loot_data["playerLoot"]  # ? ["lootItemList"]["lootItems"]
+        if item["type"] in ["STATSTONE_SHARD"]
+    ]
     for eternal in eternals:
-        recipe_name = f"STATSTONE_SHARD_DISENCHANT"
+        if eternal["lootName"] not in [item.value for item in LootNameTypes]:
+            # prevent error, by skipping
+            continue
         craft(
-            session,
-            recipe_name,
-            [eternal["lootName"]],
+            ledge_token,
+            ledge_url,
+            puuid,
+            "STATSTONE_SHARD_DISENCHANT",
+            [LootNameTypes(eternal["lootName"])],
+            1,
+            proxy,
         )
 
 
-def disenchant_ward_skins(session: RSOSession):
-    loot = get_loot(session)
-    ward_skins = [l for l in loot if l["type"] == "STATSTONE_SHARD"]
+def disenchant_ward_skins(
+    ledge_token: str,
+    ledge_url: str,
+    puuid: str,
+    loot_data: dict[str, Any],
+    proxy: Optional[ProxyTypes] = None,
+):
+    ward_skins = [
+        item
+        for item in loot_data["playerLoot"]  # ? ["lootItemList"]["lootItems"]
+        if item["type"] in ["STATSTONE_SHARD"]
+    ]
     for skin in ward_skins:
-        recipe_name = f"WARDSKIN_disenchant"
+        if skin["lootName"] not in [item.value for item in LootNameTypes]:
+            # prevent error, by skipping
+            continue
         craft(
-            session,
-            recipe_name,
-            [skin["lootName"]],
+            ledge_token,
+            ledge_url,
+            puuid,
+            "WARDSKIN_disenchant",
+            [LootNameTypes(skin["lootName"])],
+            1,
+            proxy,
         )
