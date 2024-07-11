@@ -1,4 +1,3 @@
-from enum import Enum
 from typing import Optional
 from urllib.parse import parse_qs
 from urllib.parse import urlparse
@@ -122,73 +121,23 @@ def get_ledge_token(
     return res.json()
 
 
-class InventoryTypes(str, Enum):
-    event_pass = "EVENT_PASS"
-    champion_skin = "CHAMPION_SKIN"
-
-
-def get_inventory_token(
+def get_summoner_token(
     ledge_token: str,
     puuid: str,
-    account_id: int,
-    service_location: str,
+    region: str,
     ledge_url: str,
-    inventory_type: InventoryTypes,
     proxy: Optional[ProxyTypes] = None,
 ):
     h = HEADERS.copy()
     h["Authorization"] = f"Bearer {ledge_token}"
     res = httpx.get(
-        f"{ledge_url}/lolinventoryservice-ledge/v1/inventories/simple",
+        f"{ledge_url}"
+        f"/summoner-ledge/v1/regions/{region}/summoners/puuid/{puuid}/jwt",
         headers=h,
-        params={
-            "puuid": puuid,
-            "accountId": account_id,
-            "location": service_location,
-            "inventoryTypes": inventory_type,
-        },
         proxy=proxy,
     )
     res.raise_for_status()
-    return res.json()["data"]["itemsJwt"]
-
-
-def get_event_inventory_token(
-    ledge_token: str,
-    puuid: str,
-    account_id: int,
-    service_location: str,
-    ledge_url: str,
-    proxy: Optional[ProxyTypes] = None,
-):
-    return get_inventory_token(
-        ledge_token,
-        puuid,
-        account_id,
-        service_location,
-        ledge_url,
-        InventoryTypes.event_pass,
-        proxy,
-    )
-
-
-def get_champion_inventory_token(
-    ledge_token: str,
-    puuid: str,
-    account_id: int,
-    service_location: str,
-    ledge_url: str,
-    proxy: Optional[ProxyTypes] = None,
-):
-    return get_inventory_token(
-        ledge_token,
-        puuid,
-        account_id,
-        service_location,
-        ledge_url,
-        InventoryTypes.champion_skin,
-        proxy,
-    )
+    return res.json()
 
 
 def login_using_ssid(

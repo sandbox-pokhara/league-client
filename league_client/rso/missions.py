@@ -9,8 +9,7 @@ from league_client.constants import HEADERS
 def get_missions(
     ledge_token: str,
     ledge_url: str,
-    event_inventory_token: str,
-    champion_inventory_token: str,
+    inventory_tokens: list[str],  # list of `EVENT_PASS, CHAMPION_SKIN` tokens
     userinfo_token: str,
     proxy: Optional[ProxyTypes] = None,
 ):
@@ -25,10 +24,7 @@ def get_missions(
             "playerInventory": {
                 "champions": [],
                 "icons": [],
-                "inventoryJwts": [
-                    event_inventory_token,
-                    champion_inventory_token,
-                ],
+                "inventoryJwts": inventory_tokens,
                 "skins": [],
                 "wardSkins": [],
             },
