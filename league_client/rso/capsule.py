@@ -1,30 +1,42 @@
+import json
+import time
 from typing import Any
 from typing import Optional
 
 from httpx._types import ProxyTypes
 
-from league_client.rso.constants import LootNameTypes
-from league_client.rso.craft import craft
+from league_client.rso.craft import craft_capsule
 
 
-def open_champion_capsule(
+def open_all_capsule(
     ledge_token: str,
     ledge_url: str,
     puuid: str,
     loot_data: dict[str, Any],
     proxy: Optional[ProxyTypes] = None,
 ):
-    champion_capsule = [
-        item for item in loot_data["playerLoot"] if item["type"] == "CHEST"
+    """
+    This opens following capsules:-
+        1. champion capsule
+        2. ward shard capsule
+
+    """
+    # print(loot_data["playerLoot"])
+    all_capsule = [
+        item
+        for item in loot_data["playerLoot"]
+        if item["lootItemType"] == "CHEST"
     ]
-    for capsule in champion_capsule:
+    for capsule in all_capsule:
         recipe_name = f"{capsule['lootName']}_OPEN"
-        craft(
+        response = craft_capsule(
             ledge_token,
             ledge_url,
             puuid,
             recipe_name,
-            [LootNameTypes(capsule["lootName"])],
+            [capsule["lootName"]],
             1,
             proxy,
         )
+        with open(f"{time.time()}.json", "w") as fp:
+            json.dump(response, fp)

@@ -49,6 +49,38 @@ def craft(
     return res.json()
 
 
+def craft_capsule(
+    ledge_token: str,
+    ledge_url: str,
+    puuid: str,
+    recipe_name: str,
+    capsule_names: list[str],
+    repeat: int = 1,
+    proxy: Optional[ProxyTypes] = None,
+):
+    """Craft or open a chest item"""
+    h = HEADERS.copy()
+    h["Authorization"] = f"Bearer {ledge_token}"
+
+    data = {
+        "clientId": "LolClient-LEdge",
+        "lootNameRefIds": [
+            {"lootName": item, "refId": ""} for item in capsule_names
+        ],
+        "recipeName": recipe_name,
+        "repeat": repeat,
+        "transactionId": str(uuid.uuid4()),
+    }
+    res = httpx.post(
+        f"{ledge_url}/loot/v2/player/{puuid}/craft",
+        headers=h,
+        json=data,
+        proxy=proxy,
+    )
+    res.raise_for_status()
+    return res.json()
+
+
 def craft_key_from_key_fragments(
     ledge_token: str,
     ledge_url: str,
