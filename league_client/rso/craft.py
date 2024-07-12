@@ -49,7 +49,7 @@ def craft(
     return res.json()
 
 
-def craft_capsule(
+def craft_by_name(
     ledge_token: str,
     ledge_url: str,
     puuid: str,

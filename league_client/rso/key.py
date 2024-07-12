@@ -3,8 +3,7 @@ from typing import Optional
 
 from httpx._types import ProxyTypes
 
-from league_client.rso.constants import LootNameTypes
-from league_client.rso.craft import craft
+from league_client.rso.craft import craft_by_name
 
 
 def forge_keys(
@@ -14,23 +13,23 @@ def forge_keys(
     loot_data: dict[str, Any],
     proxy: Optional[ProxyTypes] = None,
 ):
-    orbs = [
+    keys = [
         item
         for item in loot_data["playerLoot"]
         if item["lootName"] == "MATERIAL_key_fragment"
     ]
-    for orb in orbs:
-        recipe_name = f"{orb['lootName']}_forge"
+    for key in keys:
+        recipe_name = f"{key['lootName']}_forge"
         # requires 3 keys fragment to form one key
-        if orb["count"] < 3:
+        if key["count"] < 3:
             continue
-        repeat = orb["count"] // 3
-        craft(
+        repeat = key["count"] // 3
+        craft_by_name(
             ledge_token,
             ledge_url,
             puuid,
             recipe_name,
-            [LootNameTypes(orb["lootName"])],
+            [key["lootName"]],
             repeat,
             proxy,
         )

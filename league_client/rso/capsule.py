@@ -5,7 +5,7 @@ from typing import Optional
 
 from httpx._types import ProxyTypes
 
-from league_client.rso.craft import craft_capsule
+from league_client.rso.craft import craft_by_name
 
 
 def open_all_capsule(
@@ -29,7 +29,7 @@ def open_all_capsule(
     ]
     for capsule in all_capsule:
         recipe_name = f"{capsule['lootName']}_OPEN"
-        response = craft_capsule(
+        response = craft_by_name(
             ledge_token,
             ledge_url,
             puuid,
