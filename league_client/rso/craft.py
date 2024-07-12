@@ -281,7 +281,7 @@ def open_orb(
             ledge_url,
             puuid,
             "CHEST_681_OPEN",
-            [LootNameTypes.mythic_essence],
+            [LootNameTypes.orb],
             1,
             proxy,
         )
