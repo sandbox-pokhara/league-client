@@ -67,3 +67,7 @@ def get_orange_essence_count(loot_data: dict[str, Any]):
 
 def get_mythic_essence_count(loot_data: dict[str, Any]):
     return get_loot_count(loot_data, LootNameTypes.mythic_essence)
+
+
+def get_orb_count(loot_data: dict[str, Any]):
+    return get_loot_count(loot_data, LootNameTypes.orb)

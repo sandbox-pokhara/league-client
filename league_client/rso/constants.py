@@ -84,3 +84,4 @@ class LootNameTypes(str, Enum):
     mythic_essence = "CURRENCY_mythic"
     chest_new_player = "CHEST_new_player"
     chest_day_one = "CHEST_day_one"
+    orb = "CHEST_681"

@@ -15,6 +15,7 @@ from league_client.rso.loot import get_key_count
 from league_client.rso.loot import get_key_fragment_count
 from league_client.rso.loot import get_masterwork_chest_count
 from league_client.rso.loot import get_mythic_essence_count
+from league_client.rso.loot import get_orb_count
 
 
 def craft(
@@ -264,3 +265,23 @@ def craft_mythic_essence_into_skin_shard(
         count // 10,
         proxy,
     )
+
+
+def open_orb(
+    ledge_token: str,
+    ledge_url: str,
+    puuid: str,
+    loot_data: dict[str, Any],
+    proxy: Optional[ProxyTypes] = None,
+):
+    count: int = get_orb_count(loot_data)
+    if count:
+        return craft(
+            ledge_token,
+            ledge_url,
+            puuid,
+            "CHEST_681_OPEN",
+            [LootNameTypes.mythic_essence],
+            1,
+            proxy,
+        )
