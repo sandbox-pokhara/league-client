@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "league-client"
-version = "2.0.1"
-dependencies = ["httpx"]
+version = "2.0.4"
+dependencies = ["httpx", "psutil", "ucaptcha"]
 requires-python = ">=3"
 authors = [{ name = "Pradish Bijukchhe", email = "pradishbijukchhe@gmail.com" }]
 description = "league-client is a python package to communicate with riot servers"

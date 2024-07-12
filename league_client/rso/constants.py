@@ -2,6 +2,8 @@
 # example: euc1-green.pp.sgp.pvp.net
 # can be found in C:\Riot Games\League of Legends\system.yaml
 # in player_platform_edge_url field
+from enum import Enum
+
 PLAYER_PLATFORM_EDGE_URL = {
     "EUW1": "https://euc1-red.pp.sgp.pvp.net",
     "EUN1": "https://euc1-red.pp.sgp.pvp.net",
@@ -60,3 +62,25 @@ DISCOVEROUS_SERVICE_LOCATION = {
     "VN2": "lolriot.aws-euc1-prod.vn2",
     "TH2": "lolriot.aws-euc1-prod.th2",
 }
+
+
+class InventoryTypes(str, Enum):
+    champion = "CHAMPION"
+    champion_skin = "CHAMPION_SKIN"
+    event_pass = "EVENT_PASS"
+    skin_augment = "SKIN_AUGMENT"
+    skin_border = "SKIN_BORDER"
+    queue_entry = "QUEUE_ENTRY"
+
+
+class LootNameTypes(str, Enum):
+    key_fragment = "MATERIAL_key_fragment"
+    key = "MATERIAL_key"
+    generic_chest = "CHEST_generic"
+    champion_mastery_chest = "CHEST_champion_mastery"
+    masterwork_chest = "CHEST_224"
+    blue_essence = "CURRENCY_champion"
+    orange_essence = "CURRENCY_cosmetic"
+    mythic_essence = "CURRENCY_mythic"
+    chest_new_player = "CHEST_new_player"
+    chest_day_one = "CHEST_day_one"
