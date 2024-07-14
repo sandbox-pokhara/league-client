@@ -7,6 +7,7 @@ from .logger import logger
 from .rso import HEADERS
 from .rso import ClientSession
 from .rso import get_basic_auth
+from .rso_auth import parse_auth_code
 from .rso_auth import parsing_auth_code
 from .rso_auth import rso_authorize
 
@@ -238,10 +239,9 @@ async def check_password(
     """
     async with ClientSession() as session:
         proxy_auth = get_basic_auth(proxy_user, proxy_pass)
-        if not await parsing_auth_code(
-            session, accountodactyl, proxy, proxy_user, proxy_pass
-        ):
-            return False
+        client_id = "riot-client"
+        scope = "openid link ban lol_region account"
+        await parse_auth_code(session, client_id, scope, proxy, proxy_auth)
         try:
             await rso_authorize(session, username, password, proxy, proxy_auth)
         except RSOAuthorizeError as e:
