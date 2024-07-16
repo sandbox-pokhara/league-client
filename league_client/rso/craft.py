@@ -33,7 +33,7 @@ def craft(
     data = {
         "clientId": "LolClient-LEdge",
         "lootNameRefIds": [
-            {"lootName": item.value, "refId": ""} for item in loot_names
+            {"lootName": item, "refId": ""} for item in loot_names
         ],
         "recipeName": recipe_name,
         "repeat": repeat,
@@ -199,9 +199,6 @@ def craft_chest_loots(
     loot: dict[str, Any]
     for loot in loot_data["playerLoot"]:
         count: int = loot["count"]
-        if loot["lootName"] not in [item.value for item in LootNameTypes]:
-            # prevent error, by skipping
-            continue
         if requires_key:
             if key_count == 0:
                 return
@@ -210,7 +207,7 @@ def craft_chest_loots(
             ledge_token,
             ledge_url,
             puuid,
-            LootNameTypes(loot["lootName"]),
+            loot["lootName"],
             requires_key,
             count,
             proxy,
