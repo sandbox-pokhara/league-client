@@ -13,6 +13,7 @@ from league_client.rso.loot import get_champion_mastery_chest_count
 from league_client.rso.loot import get_generic_chest_count
 from league_client.rso.loot import get_key_count
 from league_client.rso.loot import get_key_fragment_count
+from league_client.rso.loot import get_loot_data
 from league_client.rso.loot import get_masterwork_chest_count
 from league_client.rso.loot import get_mythic_essence_count
 
@@ -107,11 +108,13 @@ def craft_keys_and_generic_chests(
     ledge_token: str,
     ledge_url: str,
     puuid: str,
-    loot_data: dict[str, Any],
     retry_limit: int = 10,
     proxy: Optional[ProxyTypes] = None,
 ):
     for _ in range(retry_limit):
+
+        loot_data = get_loot_data(ledge_token, ledge_url, puuid, proxy)
+
         forgable_keys = int(get_key_fragment_count(loot_data) / 3)
         key_count = get_key_count(loot_data)
         chest_count = get_generic_chest_count(loot_data)
@@ -123,24 +126,26 @@ def craft_keys_and_generic_chests(
             craft_key_from_key_fragments(
                 ledge_token, ledge_url, puuid, forgable_keys, proxy
             )
-            continue
+            time.sleep(0.5)
 
         if min(key_count, chest_count) > 0:
             craft_generic_chests(ledge_token, ledge_url, puuid, 1, proxy)
             craft_champion_mastery_chest(
                 ledge_token, ledge_url, puuid, 1, proxy
             )
+        time.sleep(0.5)
 
 
 def craft_keys_and_masterwork_chests(
     ledge_token: str,
     ledge_url: str,
     puuid: str,
-    loot_data: dict[str, Any],
     retry_limit: int = 10,
     proxy: Optional[ProxyTypes] = None,
 ):
     for _ in range(retry_limit):
+        loot_data = get_loot_data(ledge_token, ledge_url, puuid, proxy)
+
         forgable_keys = int(get_key_fragment_count(loot_data) / 3)
         key_count = get_key_count(loot_data)
         chest_count = get_masterwork_chest_count(loot_data)
@@ -151,6 +156,7 @@ def craft_keys_and_masterwork_chests(
             craft_key_from_key_fragments(
                 ledge_token, ledge_url, puuid, forgable_keys, proxy
             )
+            time.sleep(0.5)
             continue
 
         if min(key_count, chest_count) > 0:
@@ -158,6 +164,7 @@ def craft_keys_and_masterwork_chests(
             craft_champion_mastery_chest(
                 ledge_token, ledge_url, puuid, 1, proxy
             )
+        time.sleep(0.5)
 
 
 def craft_chest_by_loot_name(
@@ -220,10 +227,10 @@ def craft_champion_capsules(
     ledge_token: str,
     ledge_url: str,
     puuid: str,
-    loot_data: dict[str, Any],
     delay: int = 1,
     proxy: Optional[ProxyTypes] = None,
 ):
+    loot_data = get_loot_data(ledge_token, ledge_url, puuid, proxy)
     champion_capsules = [
         item
         for item in loot_data["playerLoot"]
@@ -246,9 +253,9 @@ def craft_mythic_essence_into_skin_shard(
     ledge_token: str,
     ledge_url: str,
     puuid: str,
-    loot_data: dict[str, Any],
     proxy: Optional[ProxyTypes] = None,
 ):
+    loot_data = get_loot_data(ledge_token, ledge_url, puuid, proxy)
     count: int = get_mythic_essence_count(loot_data)
     if count < 10:
         return
