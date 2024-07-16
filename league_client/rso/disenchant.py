@@ -17,10 +17,10 @@ def disenchant_champion_shards(
     champion_shards = [
         item
         for item in loot_data["playerLoot"]  # ? ["lootItemList"]["lootItems"]
-        if item["type"] in ["CHAMPION", "CHAMPION_RENTAL"]
+        if item["lootItemType"] in ["CHAMPION", "CHAMPION_RENTAL"]
     ]
     for shard in champion_shards:
-        recipe_name = f"{shard['type'].split('_')[0]}_disenchant"
+        recipe_name = f"{shard['lootItemType'].split('_')[0]}_disenchant"
         if shard["lootName"] not in [item.value for item in LootNameTypes]:
             # prevent error, by skipping
             continue
@@ -45,7 +45,7 @@ def disenchant_eternals(
     eternals = [
         item
         for item in loot_data["playerLoot"]  # ? ["lootItemList"]["lootItems"]
-        if item["type"] in ["STATSTONE_SHARD"]
+        if item["lootItemType"] in ["STATSTONE_SHARD"]
     ]
     for eternal in eternals:
         if eternal["lootName"] not in [item.value for item in LootNameTypes]:
@@ -72,7 +72,7 @@ def disenchant_ward_skins(
     ward_skins = [
         item
         for item in loot_data["playerLoot"]  # ? ["lootItemList"]["lootItems"]
-        if item["type"] in ["STATSTONE_SHARD"]
+        if item["lootItemType"] in ["STATSTONE_SHARD"]
     ]
     for skin in ward_skins:
         if skin["lootName"] not in [item.value for item in LootNameTypes]:
