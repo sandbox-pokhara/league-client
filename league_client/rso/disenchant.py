@@ -65,14 +65,15 @@ def disenchant_ward_skins(
     ward_skins = [
         item
         for item in loot_data["playerLoot"]  # ? ["lootItemList"]["lootItems"]
-        if item["lootItemType"] in ["WARDSKIN_RENTAL"]
+        if item["lootItemType"] in ["WARDSKIN_RENTAL", "WARDSKIN"]
     ]
     for skin in ward_skins:
+        recipe_name = f"{skin['lootItemType']}_disenchant"
         craft(
             ledge_token,
             ledge_url,
             puuid,
-            "WARDSKIN_RENTAL_disenchant",
+            recipe_name,
             [skin["lootName"]],
             skin["count"],
             proxy,
