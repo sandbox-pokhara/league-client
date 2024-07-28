@@ -182,10 +182,13 @@ def login_using_credentials(
             "password": password,
             "remember": True,
         }
+        # referer is very important to prevent cloudflare 403
+        headers = HEADERS.copy()
+        headers["referer"] = "https://authenticate.riotgames.com/"
         res = client.put(
             "https://auth.riotgames.com/api/v1/authorization",
             json=data,
-            headers=HEADERS,
+            headers=headers,
         )
         res.raise_for_status()
         data = res.json()
