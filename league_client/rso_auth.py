@@ -73,12 +73,14 @@ async def rso_authorize(
         "remember": True,
     }
     try:
+        headers = HEADERS.copy()
+        headers["referer"] = "https://authenticate.riotgames.com/"
         async with session.put(
             "https://auth.riotgames.com/api/v1/authorization",
             proxy=proxy,
             proxy_auth=proxy_auth,
             json=data,
-            headers=HEADERS,
+            headers=headers,
         ) as res:
             if not res.ok:
                 logger.debug(res.status)

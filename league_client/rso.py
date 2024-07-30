@@ -1,26 +1,8 @@
 import ssl
 
 import aiohttp
-
-# https://developers.cloudflare.com/ssl/ssl-tls/cipher-suites/
-FORCED_CIPHERS = [
-    "ECDHE-ECDSA-AES256-GCM-SHA384",
-    "ECDHE-ECDSA-AES128-GCM-SHA256",
-    "ECDHE-ECDSA-CHACHA20-POLY1305",
-    "ECDHE-RSA-AES128-GCM-SHA256",
-    "ECDHE-RSA-CHACHA20-POLY1305",
-    "ECDHE-RSA-AES128-SHA256",
-    "ECDHE-RSA-AES128-SHA",
-    "ECDHE-RSA-AES256-SHAECDHE-ECDSA-AES128-SHA256",
-    "ECDHE-ECDSA-AES128-SHA",
-    "ECDHE-ECDSA-AES256-SHA",
-    "ECDHE+AES128",
-    "ECDHE+AES256",
-    "ECDHE+3DES",
-    "RSA+AES128",
-    "RSA+AES256",
-    "RSA+3DES",
-]
+CIPHERS = "TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-RSA-AES128-SHA:ECDHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA:AES256-SHA:DES-CBC3-SHA"
+ECDH_CURVE = "prime256v1"
 
 HEADERS = {
     "Content-Type": "application/json",
@@ -36,7 +18,8 @@ class ClientSession(aiohttp.ClientSession):
     def __init__(self, *args, **kwargs):
         ctx = ssl.create_default_context()
         ctx.minimum_version = ssl.TLSVersion.TLSv1_3
-        ctx.set_ciphers(":".join(FORCED_CIPHERS))
+        ctx.set_ciphers(CIPHERS)
+        ctx.set_ecdh_curve(ECDH_CURVE)
         # fix certificate verify failed: unable to get local issuer certificate (_ssl.c:1006)
         ctx.check_hostname = False
         ctx.verify_mode = ssl.CERT_NONE
