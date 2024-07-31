@@ -59,7 +59,7 @@ def get_pas_token(access_token: str, proxy: Optional[ProxyTypes] = None):
 
 def get_entitlements_token(
     access_token: str, proxy: Optional[ProxyTypes] = None
-):
+) -> str:
     h = HEADERS.copy()
     h["Authorization"] = f"Bearer {access_token}"
     res = httpx.post(

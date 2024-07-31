@@ -360,6 +360,11 @@ wins = item["wins"]
 losses = item["losses"]
 ```
 
+```
+rank_data = get_rank_data(...)
+tier, division, wins, losses = get_tier_division_wins_losses(rank_data)
+```
+
 - Blue/Orange/Mythic Essence
 
 ```
@@ -403,4 +408,35 @@ player_loot = loot_data["playerLoot"]
 ## parse skin id from lootname 'CHAMPION_SKIN_RENTAL_887011' -> 887011
 # normal_skins = list of skin_ids from item_normal
 # permanent_skins = list of skin_ids from item_perm
+```
+
+All Skins
+
+```
+owned_skins, normal_skins, permanent_skins = get_skins(
+        champion_skin_inventory_data, loot_data
+    )
+```
+
+- Account Honor Level
+
+```
+honor_data = get_honor_data(...)
+honor_level = get_honor_level(honor_data)
+```
+
+- Account Match History, Flash Key
+
+```
+match_data = get_match_data(...)
+# summoner_id = userinfo["lol_account"]["summoner_id"]
+flash_key = get_flash_key(match_data, summoner_id)
+```
+
+- All Account Data
+
+```
+from shortcuts.rso import get_account_data
+
+account_data = get_account_data(username, password, proxy)
 ```
