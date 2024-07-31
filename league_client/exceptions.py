@@ -10,6 +10,10 @@ class LCUError(LeagueClientError):
     pass
 
 
+class AccountCheckError(RSOError):
+    pass
+
+
 class AuthFailureError(RSOError):
     pass
 

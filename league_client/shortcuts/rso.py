@@ -6,6 +6,7 @@ from typing import Optional
 from httpx._types import ProxyTypes
 
 from league_client.constants import LEAGUE_CLIENT_AUTH_PARAMS
+from league_client.exceptions import AccountCheckError
 from league_client.rso.auth import get_entitlements_token
 from league_client.rso.auth import get_ledge_token
 from league_client.rso.auth import get_login_queue_token
@@ -37,10 +38,6 @@ from league_client.rso.rank import get_tier_division_wins_losses
 from league_client.rso.skin import get_skins
 from league_client.rso.userinfo import get_userinfo
 from league_client.rso.utils import decode_token
-
-
-class AccountCheckError(Exception):
-    pass
 
 
 def get_internal_region_by_tag(region: str) -> str:

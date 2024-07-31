@@ -432,3 +432,11 @@ match_data = get_match_data(...)
 # summoner_id = userinfo["lol_account"]["summoner_id"]
 flash_key = get_flash_key(match_data, summoner_id)
 ```
+
+- All Account Data
+
+```
+from shortcuts.rso import get_account_data
+
+account_data = get_account_data(username, password, proxy)
+```
