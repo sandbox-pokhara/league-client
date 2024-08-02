@@ -103,6 +103,25 @@ LEAGUE_CLIENT_AUTH_PARAMS = {
     "scope": "openid link ban lol_region lol summoner offline_access",
 }
 
+ACCOUNTODACTYL_PARAMS = {
+    "scope": (
+        "openid email profile riot://riot.atlas/accounts.edit"
+        " riot://riot.atlas/accounts/password.edit"
+        " riot://riot.atlas/accounts/email.edit"
+        " riot://riot.atlas/accounts.auth riot://third_party.revoke"
+        " riot://third_party.query riot://forgetme/notify.write"
+        " riot://riot.authenticator/auth.code"
+        " riot://riot.authenticator/authz.edit riot://rso/mfa/device.write"
+        " riot://riot.authenticator/identity.add"
+    ),
+    "state": "fc5a8f17-e99f-4eb9-afd9-a950e0eb30c6",
+    "acr_values": "urn:riot:gold",
+    "ui_locales": "en",
+    "client_id": "accountodactyl-prod",
+    "redirect_uri": "https://account.riotgames.com/oauth2/log-in",
+    "response_type": "code",
+}
+
 # LCU
 SITE_URL = "https://authenticate.riotgames.com/api/v1/login"
 USER_AGENT = (
