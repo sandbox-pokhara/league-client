@@ -163,6 +163,36 @@ def login_using_ssid(
         raise InvalidSessionError(res.text, res.status_code)
 
 
+def authorize(
+    client: httpx.Client,
+    username: str,
+    password: str,
+    params: dict[str, str] = RIOT_CLIENT_AUTH_PARAMS,
+) -> httpx.Response:
+    res = client.post(
+        "https://auth.riotgames.com/api/v1/authorization",
+        params=params,
+        headers=HEADERS,
+    )
+    res.raise_for_status()
+    data = {
+        "type": "auth",
+        "username": username,
+        "password": password,
+        "remember": True,
+    }
+    # referer is very important to prevent cloudflare 403
+    headers = HEADERS.copy()
+    headers["referer"] = "https://authenticate.riotgames.com/"
+    res = client.put(
+        "https://auth.riotgames.com/api/v1/authorization",
+        json=data,
+        headers=headers,
+    )
+    res.raise_for_status()
+    return res
+
+
 def login_using_credentials(
     username: str,
     password: str,
@@ -170,27 +200,7 @@ def login_using_credentials(
     proxy: Optional[ProxyTypes] = None,
 ) -> tuple[str, str, str, str, str, str, str, str]:
     with httpx.Client(verify=SSL_CONTEXT, proxy=proxy) as client:
-        res = client.post(
-            "https://auth.riotgames.com/api/v1/authorization",
-            params=params,
-            headers=HEADERS,
-        )
-        res.raise_for_status()
-        data = {
-            "type": "auth",
-            "username": username,
-            "password": password,
-            "remember": True,
-        }
-        # referer is very important to prevent cloudflare 403
-        headers = HEADERS.copy()
-        headers["referer"] = "https://authenticate.riotgames.com/"
-        res = client.put(
-            "https://auth.riotgames.com/api/v1/authorization",
-            json=data,
-            headers=headers,
-        )
-        res.raise_for_status()
+        res = authorize(client, username, password, params)
         data = res.json()
         if "response" in data:
             ssid = client.cookies["ssid"]

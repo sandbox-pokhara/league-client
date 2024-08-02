@@ -2,6 +2,10 @@ class LeagueClientError(Exception):
     pass
 
 
+class RateLimitedError(LeagueClientError):
+    pass
+
+
 class RSOError(LeagueClientError):
     pass
 
@@ -15,6 +19,10 @@ class AccountCheckError(RSOError):
 
 
 class AuthFailureError(RSOError):
+    pass
+
+
+class AuthMultifactorError(AuthFailureError):
     pass
 
 
