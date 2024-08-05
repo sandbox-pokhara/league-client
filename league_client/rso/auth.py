@@ -9,7 +9,9 @@ from league_client.constants import HEADERS
 from league_client.constants import RIOT_CLIENT_AUTH_PARAMS
 from league_client.constants import SSL_CONTEXT
 from league_client.exceptions import AuthFailureError
+from league_client.exceptions import AuthMultifactorError
 from league_client.exceptions import InvalidSessionError
+from league_client.exceptions import RateLimitedError
 from league_client.rso.utils import decode_token
 
 
@@ -202,9 +204,16 @@ def login_using_credentials(
     with httpx.Client(verify=SSL_CONTEXT, proxy=proxy) as client:
         res = authorize(client, username, password, params)
         data = res.json()
-        if "response" in data:
+        response_type = data["type"]
+        if response_type == "response":
             ssid = client.cookies["ssid"]
             redirect_url = data["response"]["parameters"]["uri"]
             data = process_redirect_url(redirect_url)
             return (ssid, *data)
+        elif response_type == "multifactor":
+            raise AuthMultifactorError(res.text, res.status_code)
+        elif response_type == "auth" and data["error"] == "auth_failure":
+            raise AuthFailureError(res.text, res.status_code)
+        elif response_type == "auth" and data["error"] == "rate_limited":
+            raise RateLimitedError(res.text, res.status_code)
         raise AuthFailureError(res.text, res.status_code)

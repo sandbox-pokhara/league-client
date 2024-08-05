@@ -6,32 +6,9 @@ from httpx._types import ProxyTypes
 
 from league_client.constants import ACCOUNTODACTYL_PARAMS
 from league_client.constants import HEADERS
-from league_client.constants import RIOT_CLIENT_AUTH_PARAMS
 from league_client.constants import SSL_CONTEXT
 from league_client.exceptions import AuthFailureError
-from league_client.exceptions import AuthMultifactorError
-from league_client.exceptions import RateLimitedError
 from league_client.rso.auth import authorize
-
-
-def check_password(
-    username: str,
-    password: str,
-    proxy: Optional[ProxyTypes] = None,
-) -> bool:
-    with httpx.Client(verify=SSL_CONTEXT, proxy=proxy) as client:
-        res = authorize(client, username, password, RIOT_CLIENT_AUTH_PARAMS)
-        data = res.json()
-        response_type = data["type"]
-        if response_type == "response":
-            return True
-        elif response_type == "multifactor":
-            raise AuthMultifactorError("Multifactor authentication")
-        elif response_type == "auth" and data["error"] == "auth_failure":
-            return False
-        elif response_type == "auth" and data["error"] == "rate_limited":
-            raise RateLimitedError("Rate limited")
-        raise AuthFailureError("Failed to check password")
 
 
 def parse_csrf_token(text: str):
@@ -42,7 +19,7 @@ def parse_csrf_token(text: str):
     return match.group(1)
 
 
-def change_password(
+def change_password_using_credentials(
     username: str,
     password: str,
     new_password: str,
