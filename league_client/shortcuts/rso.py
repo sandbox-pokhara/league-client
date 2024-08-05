@@ -6,7 +6,9 @@ from typing import Optional
 from httpx._types import ProxyTypes
 
 from league_client.constants import LEAGUE_CLIENT_AUTH_PARAMS
+from league_client.constants import RIOT_CLIENT_AUTH_PARAMS
 from league_client.exceptions import AccountCheckError
+from league_client.exceptions import AuthFailureError
 from league_client.rso.auth import get_entitlements_token
 from league_client.rso.auth import get_ledge_token
 from league_client.rso.auth import get_login_queue_token
@@ -32,6 +34,7 @@ from league_client.rso.match import get_match_data
 from league_client.rso.party import get_party_data
 from league_client.rso.party import get_party_id
 from league_client.rso.party import get_party_restrictions
+from league_client.rso.password import change_password_using_credentials
 from league_client.rso.rank import get_rank_data
 from league_client.rso.rank import get_ranked_overview_token
 from league_client.rso.rank import get_tier_division_wins_losses
@@ -371,3 +374,28 @@ def get_account_data(
     account_data["available_queues"] = party_restrictions["availableQueueIds"]
 
     return account_data
+
+
+def check_password(
+    username: str,
+    password: str,
+    proxy: Optional[ProxyTypes] = None,
+) -> bool:
+    try:
+        login_using_credentials(
+            username, password, RIOT_CLIENT_AUTH_PARAMS, proxy
+        )
+        return True
+    except AuthFailureError:
+        return False
+
+
+def change_password(
+    username: str,
+    password: str,
+    new_password: str,
+    proxy: Optional[ProxyTypes] = None,
+) -> bool:
+    return change_password_using_credentials(
+        username, password, new_password, proxy
+    )
