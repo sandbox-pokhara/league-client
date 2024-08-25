@@ -230,11 +230,18 @@ def get_account_data(
                 match_data = future.result()
                 quickplay_wins = 0
                 quickplay_losses = 0
+                puuid = account_data["puuid"]
+                print(puuid)
 
                 for game in match_data["games"]:
                     if game["json"]["queueId"] == 490:
-                        # find wins & losses
-                        pass
+                        for participant in game["json"]["participants"]:
+                            if participant["puuid"] == puuid:
+                                if participant["win"]:
+                                    quickplay_wins += 1
+                                else:
+                                    quickplay_losses += 1
+
                         
                 flash_key = get_flash_key(
                     match_data, account_data["summoner_id"]
