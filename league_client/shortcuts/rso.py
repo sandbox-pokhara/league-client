@@ -75,6 +75,8 @@ def get_account_data(
         "division":None,
         "wins":0,
         "losses":0,
+        "quickplay_wins":0,
+        "quickplay_losses":0,
         "honor_level":2,
         "blue_essence":43015,
         "orange_essence":940,
@@ -198,6 +200,7 @@ def get_account_data(
             account_data["puuid"],
             dat["ppedge_url"],
             proxy,
+            100,
         )
 
         for future in as_completed([future_loginq, future_match]):
@@ -225,10 +228,25 @@ def get_account_data(
 
             elif future is future_match:
                 match_data = future.result()
+                quickplay_wins = 0
+                quickplay_losses = 0
+                puuid = account_data["puuid"]
+
+                for game in match_data["games"]:
+                    if game["json"]["queueId"] == 490:
+                        for participant in game["json"]["participants"]:
+                            if participant["puuid"] == puuid:
+                                if participant["win"]:
+                                    quickplay_wins += 1
+                                else:
+                                    quickplay_losses += 1
+
                 flash_key = get_flash_key(
                     match_data, account_data["summoner_id"]
                 )
                 account_data["flash_key"] = flash_key
+                account_data["quickplay_wins"] = quickplay_wins
+                account_data["quickplay_losses"] = quickplay_losses
 
     with ThreadPoolExecutor(6) as executor:
         future_loot = executor.submit(

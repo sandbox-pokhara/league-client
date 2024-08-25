@@ -12,11 +12,15 @@ def get_match_data(
     puuid: str,
     player_platform_edge_url: str,
     proxy: Optional[ProxyTypes] = None,
+    count: int = 30,
 ):
     h = HEADERS.copy()
     h["Authorization"] = f"Bearer {access_token}"
     res = httpx.get(
-        f"{player_platform_edge_url}/match-history-query/v1/products/lol/player/{puuid}/SUMMARY?startIndex=0&count=30",
+        (
+            f"{player_platform_edge_url}/match-history-query/v1/products"
+            f"/lol/player/{puuid}/SUMMARY?startIndex=0&count={count}"
+        ),
         headers=h,
         proxy=proxy,
     )
