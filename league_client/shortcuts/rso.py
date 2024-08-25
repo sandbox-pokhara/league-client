@@ -232,12 +232,9 @@ def get_account_data(
                 quickplay_losses = 0
 
                 for game in match_data["games"]:
-                    if game["json"]["gameMode"] == "QUICKPLAY":
-                        for participant in game["json"]["participants"]:
-                            if participant["win"]:
-                                quickplay_wins += 1
-                            else:
-                                quickplay_losses += 1
+                    if game["json"]["queueId"] == 490:
+                        # find wins & losses
+                        pass
                         
                 flash_key = get_flash_key(
                     match_data, account_data["summoner_id"]
