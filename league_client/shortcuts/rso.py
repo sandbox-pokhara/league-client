@@ -200,6 +200,7 @@ def get_account_data(
             account_data["puuid"],
             dat["ppedge_url"],
             proxy,
+            100
         )
 
         for future in as_completed([future_loginq, future_match]):
