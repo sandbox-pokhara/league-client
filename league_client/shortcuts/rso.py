@@ -200,7 +200,7 @@ def get_account_data(
             account_data["puuid"],
             dat["ppedge_url"],
             proxy,
-            100
+            100,
         )
 
         for future in as_completed([future_loginq, future_match]):
@@ -231,7 +231,6 @@ def get_account_data(
                 quickplay_wins = 0
                 quickplay_losses = 0
                 puuid = account_data["puuid"]
-                print(puuid)
 
                 for game in match_data["games"]:
                     if game["json"]["queueId"] == 490:
@@ -242,7 +241,6 @@ def get_account_data(
                                 else:
                                     quickplay_losses += 1
 
-                        
                 flash_key = get_flash_key(
                     match_data, account_data["summoner_id"]
                 )
