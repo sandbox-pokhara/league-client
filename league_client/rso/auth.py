@@ -185,7 +185,7 @@ def authorize(
     }
     # referer is very important to prevent cloudflare 403
     headers = HEADERS.copy()
-    headers["referer"] = "https://authenticate.riotgames.com/"
+    headers["referer"] = "https://www.riotgames.com/"
     res = client.put(
         "https://auth.riotgames.com/api/v1/authorization",
         json=data,
