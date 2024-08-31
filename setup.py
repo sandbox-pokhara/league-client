@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="league-client",
-    version="1.0.69",
+    version="1.0.70",
     author="Pradish Bijukchhe",
     author_email="pradishbijukchhe@gmail.com",
     description=(
