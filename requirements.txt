@@ -1,3 +1,3 @@
 httpx
 psutil
-ucaptcha
+ucaptcha>=1.0.10
