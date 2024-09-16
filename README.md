@@ -46,9 +46,15 @@ params = RIOT_CLIENT_AUTH_PARAMS
 # league client data like rank, match history, missions, loot, etc
 params = LEAGUE_CLIENT_AUTH_PARAMS
 
+# captcha_solver is a function that takes rqdata and sitekey as arguments
+# and should return a token, WebServerSolver from ValLib works but most of
+# the captcha solving services do not work, feel free to contribute if you
+# have a solution
+
 # login using credentials
 (
     ssid,
+    clid,
     access_token,
     scope,
     iss,
@@ -56,12 +62,18 @@ params = LEAGUE_CLIENT_AUTH_PARAMS
     token_type,
     session_state,
     expires_in,
-) = login_using_credentials("USERNAME", "PASSWORD", params)
-
+) = login_using_credentials(
+    username,
+    password,
+    captcha_solver,
+    params=RIOT_CLIENT_AUTH_PARAMS,
+    proxy=proxy,
+)
 # or login using session id, if you have already logged in once
 # recommended to avoid rate limit
 (
     ssid,
+    clid,
     access_token,
     scope,
     iss,
@@ -69,7 +81,7 @@ params = LEAGUE_CLIENT_AUTH_PARAMS
     token_type,
     session_state,
     expires_in,
-) = login_using_ssid(ssid, params)
+) = login_using_ssid(ssid, clid, params)
 
 
 # puuid, region and account_id can be parsed from access_token
@@ -438,5 +450,5 @@ flash_key = get_flash_key(match_data, summoner_id)
 ```
 from shortcuts.rso import get_account_data
 
-account_data = get_account_data(username, password, proxy)
+account_data = get_account_data(username, password, captcha_solver, proxy)
 ```
