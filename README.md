@@ -7,7 +7,7 @@ We are actively developing 2.x.x version of this package, if you need the docume
 ## Installation
 
 ```
-pip install -U league-client
+pip install -U league-client ucaptcha
 ```
 
 ## Usage
@@ -15,28 +15,46 @@ pip install -U league-client
 ### RSO
 
 ```py
+from ucaptcha import solve_captcha
+
 from league_client.constants import LEAGUE_CLIENT_AUTH_PARAMS
 from league_client.constants import RIOT_CLIENT_AUTH_PARAMS
+from league_client.rso.auth import get_entitlements_token
 from league_client.rso.auth import get_ledge_token
 from league_client.rso.auth import get_login_queue_token
+from league_client.rso.auth import get_summoner_token
 from league_client.rso.auth import login_using_credentials
 from league_client.rso.auth import login_using_ssid
 from league_client.rso.auth import process_access_token
 from league_client.rso.constants import DISCOVEROUS_SERVICE_LOCATION
-from league_client.rso.constants import InventoryTypes
 from league_client.rso.constants import LEAGUE_EDGE_URL
 from league_client.rso.constants import PLAYER_PLATFORM_EDGE_URL
-from league_client.rso.inventory import get_champion_inventory_token
-from league_client.rso.inventory import get_entitlements_token
-from league_client.rso.inventory import get_event_inventory_token
+from league_client.rso.constants import InventoryTypes
 from league_client.rso.inventory import get_inventory_data
 from league_client.rso.inventory import get_inventory_data_v2
 from league_client.rso.inventory import get_inventory_token
 from league_client.rso.inventory import get_inventory_token_v2
 from league_client.rso.missions import get_missions
-from league_client.rso.rank import get_ranked_overview_token
+from league_client.rso.party import get_party_data
+from league_client.rso.party import get_party_id
+from league_client.rso.party import get_party_restrictions
 from league_client.rso.rank import get_rank_data
+from league_client.rso.rank import get_ranked_overview_token
 from league_client.rso.userinfo import get_userinfo
+
+# captcha_solver is a function that takes rqdata and sitekey as arguments
+# and should return a token, ucaptcha is used here, but you can use your
+# custom code here
+def captcha_solver(rqdata: str, sitekey: str) -> str:
+    return solve_captcha(
+        "twocaptcha", # other captcha service might not work
+        "...",
+        sitekey,
+        "https://authenticate.riotgames.com/",
+        rqdata=rqdata,
+        enterprise=True,
+        invisible=True,
+    )
 
 # use riot client auth for basic stuffs like
 # riot id, account id, etc
@@ -46,10 +64,6 @@ params = RIOT_CLIENT_AUTH_PARAMS
 # league client data like rank, match history, missions, loot, etc
 params = LEAGUE_CLIENT_AUTH_PARAMS
 
-# captcha_solver is a function that takes rqdata and sitekey as arguments
-# and should return a token, WebServerSolver from ValLib works but most of
-# the captcha solving services do not work, feel free to contribute if you
-# have a solution
 
 # login using credentials
 (
@@ -63,11 +77,11 @@ params = LEAGUE_CLIENT_AUTH_PARAMS
     session_state,
     expires_in,
 ) = login_using_credentials(
-    username,
-    password,
+    "username",
+    "password",
     captcha_solver,
     params=RIOT_CLIENT_AUTH_PARAMS,
-    proxy=proxy,
+    proxy="proxy",
 )
 # or login using session id, if you have already logged in once
 # recommended to avoid rate limit
@@ -163,24 +177,26 @@ event_pass_inventory_token = get_inventory_token(
         ledge_token,
         puuid,
         account_id,
-        service_location,
-        ledge_url,
+        discoverous_service_location,
+        league_edge_url,
         inventory_types=[
             InventoryTypes.event_pass,
         ],
-))
+    )
+)
 # inventoryTypes = ["CHAMPION_SKIN"]
 champion_skin_inventory_token = get_inventory_token(
     get_inventory_data(
         ledge_token,
         puuid,
         account_id,
-        service_location,
-        ledge_url,
+        discoverous_service_location,
+        league_edge_url,
         inventory_types=[
             InventoryTypes.champion_skin,
         ],
-))
+    )
+)
 
 # parse missions
 missions = get_missions(
@@ -247,8 +263,8 @@ party_data = get_party_data(
     str(userinfo),
     summoner_token,
     ranked_overview_token,
-    inventory_token,    # champion, champion_skin, skin_border, skin_augment
-    inventory_token_v2, # queue_entry
+    inventory_token,  # champion, champion_skin, skin_border, skin_augment
+    inventory_token_v2,  # queue_entry
 )
 party_id = get_party_id(party_data)
 party_restrictions = get_party_restrictions(
