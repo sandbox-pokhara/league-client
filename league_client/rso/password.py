@@ -1,4 +1,5 @@
 import re
+from typing import Callable
 from typing import Optional
 
 import httpx
@@ -23,10 +24,13 @@ def change_password_using_credentials(
     username: str,
     password: str,
     new_password: str,
+    captcha_solver: Callable[[str, str], str],
     proxy: Optional[ProxyTypes] = None,
 ) -> bool:
     with httpx.Client(verify=SSL_CONTEXT, proxy=proxy) as client:
-        res = authorize(client, username, password, ACCOUNTODACTYL_PARAMS)
+        res = authorize(
+            client, username, password, captcha_solver, ACCOUNTODACTYL_PARAMS
+        )
         data = res.json()
         if data["type"] != "response":
             raise AuthFailureError("Failed to authorize")

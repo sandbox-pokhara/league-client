@@ -1,6 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor
 from concurrent.futures import as_completed
 from typing import Any
+from typing import Callable
 from typing import Optional
 
 from httpx._types import ProxyTypes
@@ -54,7 +55,10 @@ def get_internal_region_by_tag(region: str) -> str:
 
 
 def get_account_data(
-    username: str, password: str, proxy: Optional[ProxyTypes] = None
+    username: str,
+    password: str,
+    captcha_solver: Callable[[str, str], str],
+    proxy: Optional[ProxyTypes] = None,
 ):
     """
     Get account data using RSO.
@@ -111,6 +115,7 @@ def get_account_data(
     params = LEAGUE_CLIENT_AUTH_PARAMS
     (
         _,
+        _,
         access_token,
         _,
         _,
@@ -121,6 +126,7 @@ def get_account_data(
     ) = login_using_credentials(
         username,
         password,
+        captcha_solver,
         params,
         proxy=proxy,
     )
@@ -397,11 +403,12 @@ def get_account_data(
 def check_password(
     username: str,
     password: str,
+    captcha_solver: Callable[[str, str], str],
     proxy: Optional[ProxyTypes] = None,
 ) -> bool:
     try:
         login_using_credentials(
-            username, password, RIOT_CLIENT_AUTH_PARAMS, proxy
+            username, password, captcha_solver, RIOT_CLIENT_AUTH_PARAMS, proxy
         )
         return True
     except AuthFailureError:
@@ -411,9 +418,10 @@ def check_password(
 def change_password(
     username: str,
     password: str,
+    captcha_solver: Callable[[str, str], str],
     new_password: str,
     proxy: Optional[ProxyTypes] = None,
 ) -> bool:
     return change_password_using_credentials(
-        username, password, new_password, proxy
+        username, password, new_password, captcha_solver, proxy
     )
