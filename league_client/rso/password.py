@@ -7,8 +7,8 @@ from httpx._types import ProxyTypes
 
 from league_client.constants import ACCOUNTODACTYL_PARAMS
 from league_client.constants import HEADERS
+from league_client.constants import PROD_XSS0_RIOTGAMES
 from league_client.constants import SSL_CONTEXT
-from league_client.exceptions import AuthFailureError
 from league_client.rso.auth import authorize
 
 
@@ -28,15 +28,17 @@ def change_password_using_credentials(
     proxy: Optional[ProxyTypes] = None,
 ) -> bool:
     with httpx.Client(verify=SSL_CONTEXT, proxy=proxy) as client:
-        res = authorize(
-            client, username, password, captcha_solver, ACCOUNTODACTYL_PARAMS
+        authorize(
+            client, username, password, captcha_solver, PROD_XSS0_RIOTGAMES
         )
-        data = res.json()
-        if data["type"] != "response":
-            raise AuthFailureError("Failed to authorize")
-        url = data["response"]["parameters"]["uri"]
-        # redirect
-        client.get(url, headers=HEADERS, follow_redirects=True)
+        authorize(
+            client,
+            username,
+            password,
+            captcha_solver,
+            ACCOUNTODACTYL_PARAMS,
+            "re-auth",
+        )
         res = client.get(
             "https://account.riotgames.com/",
             headers=HEADERS,

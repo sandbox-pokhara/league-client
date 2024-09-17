@@ -83,8 +83,11 @@ RIOT_CLIENT_AUTH_PARAMS = {
     "acr_values": "",
     "claims": "",
     "client_id": "riot-client",
-    "code_challenge": "",
-    "code_challenge_method": "",
+    # commented because it returns 400 code
+    # when using website authorize flow
+    #
+    # "code_challenge": "",
+    # "code_challenge_method": "",
     "nonce": "SYXugqaAL5z7U7iioaTW5Q",
     "redirect_uri": "http://localhost/redirect",
     "response_type": "token id_token",
@@ -95,8 +98,11 @@ LEAGUE_CLIENT_AUTH_PARAMS = {
     "acr_values": "",
     "claims": "",
     "client_id": "lol",
-    "code_challenge": "",
-    "code_challenge_method": "",
+    # commented because it returns 400 code
+    # when using website authorize flow
+    #
+    # "code_challenge": "",
+    # "code_challenge_method": "",
     "nonce": "SYXugqaAL5z7U7iioaTW5Q",
     "redirect_uri": "http://localhost/redirect",
     "response_type": "token id_token",
@@ -122,9 +128,14 @@ ACCOUNTODACTYL_PARAMS = {
     "response_type": "code",
 }
 
-# LCU
-SITE_URL = "https://authenticate.riotgames.com/api/v1/login"
-USER_AGENT = (
-    "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36"
-    " (KHTML, like Gecko) RiotClient/70.0.0 (CEF 74) Safari/537.36"
-)
+
+PROD_XSS0_RIOTGAMES = {
+    "client_id": "prod-xsso-riotgames",
+    "scope": "openid account email offline_access",
+    "code_challenge_method": "S256",
+    "code_challenge": "zUo5VZKlO9BvmC_KX5sihHLmeR7iy7sRoHO2WYxON58",
+    "redirect_uri": "https://xsso.riotgames.com/redirect",
+    "state": "9ef38e6acae290380703408405",
+    "response_type": "code",
+    "prompt": "login",
+}

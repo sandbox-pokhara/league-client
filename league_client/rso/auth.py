@@ -1,4 +1,5 @@
 from typing import Callable
+from typing import Literal
 from typing import Optional
 from urllib.parse import parse_qs
 from urllib.parse import urlparse
@@ -174,62 +175,91 @@ def authorize(
     password: str,
     captcha_solver: Callable[[str, str], str],
     params: dict[str, str] = RIOT_CLIENT_AUTH_PARAMS,
+    type: Literal["auth", "re-auth"] = "auth",
 ):
-    url = "https://auth.riotgames.com/api/v1/authorization"
-    res = client.post(url, json=params, headers=HEADERS)
+    # the authorization flow is different for
+    # website (prod-xsso-riotgames, accountodactyl-prod)
+    # and client (riot-client, lol)
+    #
+    # this flow is based on website but works
+    # for (riot-client, lol)
+    #
+    # if this flow stops working for (riot-client, lol)
+    # revert to commit 5f1bbba
+
+    # step 1: set authorization params
+    url = "https://auth.riotgames.com/authorize"
+    res = client.get(
+        url, params=params, headers=HEADERS, follow_redirects=True
+    )
     res.raise_for_status()
 
+    # step 2: get hcaptcha details (sitekey and rqdata)
     url = "https://authenticate.riotgames.com/api/v1/login"
-    body = {
-        "clientId": "riot-client",
-        "language": "en_US",
-        "platform": "windows",
-        "remember": True,
-        "riot_identity": {"state": "auth"},
-        "type": "auth",
-    }
-    res = client.post(url, json=body, headers=HEADERS)
+    res = client.get(url, headers=HEADERS)
     res.raise_for_status()
     data = res.json()
     site_key = data["captcha"]["hcaptcha"]["key"]
     site_data = data["captcha"]["hcaptcha"]["data"]
 
+    # step 3: solve captcha
     token = captcha_solver(site_data, site_key)
 
+    # step 4: put authentication data (username/password)
+    # the response contains login token
     url = "https://authenticate.riotgames.com/api/v1/login"
-    body = {
-        "language": "en_US",
-        "remember": True,
-        "riot_identity": {
-            "captcha": f"hcaptcha {token}",
-            "password": password,
-            "username": username,
-        },
-        "type": "auth",
-    }
+    if type == "auth":
+        body = {
+            "language": "en_US",
+            "remember": True,
+            "riot_identity": {
+                "captcha": f"hcaptcha {token}",
+                "password": password,
+                "username": username,
+            },
+            "type": "auth",
+        }
+    else:
+        body = {
+            "type": "re-auth",
+            "remember": True,
+            "language": "en_US",
+            "riot_identity": {
+                "password": password,
+                "captcha": f"hcaptcha {token}",
+            },
+        }
     res = client.put(url, json=body, headers=HEADERS)
     res.raise_for_status()
 
+    # step 5: post login token/redirect to complete authentication
     data = res.json()
     response_type = data["type"]
     if response_type == "success":
-        body = {
-            "authentication_type": "RiotAuth",
-            "code_verifier": "",
-            "login_token": data["success"]["login_token"],
-            "persist_login": True,
-        }
-        client.post(
-            "https://auth.riotgames.com/api/v1/login-token",
-            json=body,
-            headers=HEADERS,
-        )
-        res.raise_for_status()
-        return client.post(
-            "https://auth.riotgames.com/api/v1/authorization",
-            params=params,
-            headers=HEADERS,
-        )
+        # riot-client and lol redirects to localhost
+        # so, we use a different method to post login token
+        # for these clients
+        if params["client_id"] in ["riot-client", "lol"]:
+            body = {
+                "authentication_type": "RiotAuth",
+                "code_verifier": "",
+                "login_token": data["success"]["login_token"],
+                "persist_login": True,
+            }
+            res = client.post(
+                "https://auth.riotgames.com/api/v1/login-token",
+                json=body,
+                headers=HEADERS,
+            )
+            res.raise_for_status()
+        else:
+            # NOTE: not raising for status because it can raise false
+            # positive when success
+            client.get(
+                data["success"]["redirect_url"],
+                headers=HEADERS,
+                follow_redirects=True,
+            )
     elif response_type == "multifactor":
         raise AuthMultifactorError(res.text, res.status_code)
     elif response_type == "auth" and data["error"] == "auth_failure":
@@ -248,12 +278,17 @@ def login_using_credentials(
     proxy: Optional[ProxyTypes] = None,
 ) -> tuple[str, str, str, str, str, str, str, str, str]:
     with httpx.Client(verify=SSL_CONTEXT, proxy=proxy) as client:
-        res = authorize(
+        authorize(
             client,
             username,
             password,
             captcha_solver,
             params,
+        )
+        res = client.post(
+            "https://auth.riotgames.com/api/v1/authorization",
+            params=params,
+            headers=HEADERS,
         )
         data = res.json()
         ssid = client.cookies["ssid"]
