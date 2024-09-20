@@ -293,6 +293,8 @@ def login_using_credentials(
         data = res.json()
         ssid = client.cookies["ssid"]
         clid = client.cookies["clid"]
+        if "response" not in data:
+            raise AuthFailureError(res.text, res.status_code)
         redirect_url = data["response"]["parameters"]["uri"]
         data = process_redirect_url(redirect_url)
         return (ssid, clid, *data)
