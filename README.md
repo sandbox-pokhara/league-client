@@ -47,13 +47,11 @@ from league_client.rso.userinfo import get_userinfo
 # custom code here
 def captcha_solver(rqdata: str, sitekey: str) -> str:
     return solve_captcha(
-        "twocaptcha", # other captcha service might not work
+        "capmonster", # other captcha service might not work
         "...",
         sitekey,
-        "https://authenticate.riotgames.com/",
+        "https://authenticate.riotgames.com/?client_id=lol&locale=en_US&method=riot_identity&platform=windows",
         rqdata=rqdata,
-        enterprise=True,
-        invisible=True,
     )
 
 # use riot client auth for basic stuffs like
