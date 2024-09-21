@@ -290,6 +290,8 @@ def login_using_credentials(
             params=params,
             headers=HEADERS,
         )
+        # NOTE: IP might be banned at this point
+        res.raise_for_status()
         data = res.json()
         ssid = client.cookies["ssid"]
         clid = client.cookies["clid"]
