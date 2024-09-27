@@ -19,6 +19,8 @@ def get_userinfo(
     )
     res.raise_for_status()
     # userinfo can be either jwt or json based on access token type
-    if res.headers["content-type"] == "application/jwt; charset=utf-8":
+    # riot server sends either application/jwt;charset=UTF-8 or
+    # application/jwt; charset=utf-8 for jwt tokens
+    if res.headers["content-type"].lower().startswith("application/jwt;"):
         return res.text
     return res.json()
