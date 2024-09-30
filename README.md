@@ -291,6 +291,46 @@ party_restrictions = get_party_restrictions(
 # https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/queues.json
 ```
 
+### Create Riot Account
+
+```py
+import random
+from string import ascii_letters
+from string import digits
+
+import ucaptcha
+
+from league_client.rso.sign_up import sign_up
+
+
+def capmonster(rqdata: str, sitekey: str) -> str:
+    return ucaptcha.solve_captcha(
+        "capmonster",
+        "...",
+        site_key=sitekey,
+        url="https://authenticate.riotgames.com/?client_id=lol&locale=en_US&method=riot_identity&platform=windows",
+        rqdata=rqdata,
+    )
+
+
+username = "".join(random.choices(ascii_letters, k=16))
+password = "".join(random.choices(ascii_letters + digits + "!@#", k=32))
+email = username + "@gmail.com"
+dob = "1990-01-01"
+print(username)
+print(password)
+print(email)
+print(
+    sign_up(
+        username,
+        password,
+        email,
+        dob,
+        capmonster,
+    )
+)
+```
+
 ### Use Cases Summary
 
 For parsing specific data, use preferred method from the following cases:
