@@ -3,13 +3,13 @@ from typing import Callable
 from typing import Optional
 
 import httpx
-from httpx._types import ProxyTypes
 
 from league_client.constants import ACCOUNTODACTYL_PARAMS
 from league_client.constants import HEADERS
 from league_client.constants import PROD_XSS0_RIOTGAMES
 from league_client.constants import SSL_CONTEXT
 from league_client.rso.auth import authorize
+from league_client.types import ProxyT
 
 
 def parse_csrf_token(text: str):
@@ -25,7 +25,7 @@ def change_password_using_credentials(
     password: str,
     new_password: str,
     captcha_solver: Callable[[str, str], str],
-    proxy: Optional[ProxyTypes] = None,
+    proxy: Optional[ProxyT] = None,
 ) -> bool:
     with httpx.Client(verify=SSL_CONTEXT, proxy=proxy) as client:
         authorize(

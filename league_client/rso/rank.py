@@ -3,15 +3,15 @@ from typing import Optional
 from typing import cast
 
 import httpx
-from httpx._types import ProxyTypes
 
 from league_client.constants import HEADERS
+from league_client.types import ProxyT
 
 
 def get_rank_data(
     ledge_token: str,
     ledge_url: str,
-    proxy: Optional[ProxyTypes] = None,
+    proxy: Optional[ProxyT] = None,
 ):
     h = HEADERS.copy()
     h["Authorization"] = f"Bearer {ledge_token}"

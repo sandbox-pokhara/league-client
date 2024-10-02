@@ -3,10 +3,10 @@ from typing import List
 from typing import Optional
 
 import httpx
-from httpx._types import ProxyTypes
 
 from league_client.constants import HEADERS
 from league_client.rso.constants import InventoryTypes
+from league_client.types import ProxyT
 
 
 def _inventory_data_from_url(
@@ -16,7 +16,7 @@ def _inventory_data_from_url(
     account_id: int,
     service_location: str,
     inventory_types: List[InventoryTypes],
-    proxy: Optional[ProxyTypes] = None,
+    proxy: Optional[ProxyT] = None,
 ):
     h = HEADERS.copy()
     h["Authorization"] = f"Bearer {ledge_token}"
@@ -43,7 +43,7 @@ def get_inventory_data(
     service_location: str,
     ledge_url: str,
     inventory_types: List[InventoryTypes],
-    proxy: Optional[ProxyTypes] = None,
+    proxy: Optional[ProxyT] = None,
 ):
     return _inventory_data_from_url(
         f"{ledge_url}/lolinventoryservice-ledge/v1/inventories/simple",
@@ -67,7 +67,7 @@ def get_inventory_data_v2(
     service_location: str,
     ledge_url: str,
     inventory_types: List[InventoryTypes],
-    proxy: Optional[ProxyTypes] = None,
+    proxy: Optional[ProxyT] = None,
 ):
     return _inventory_data_from_url(
         f"{ledge_url}/lolinventoryservice-ledge/v2/inventoriesWithLoyalty",

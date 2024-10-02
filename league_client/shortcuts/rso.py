@@ -4,8 +4,6 @@ from typing import Any
 from typing import Callable
 from typing import Optional
 
-from httpx._types import ProxyTypes
-
 from league_client.constants import LEAGUE_CLIENT_AUTH_PARAMS
 from league_client.constants import RIOT_CLIENT_AUTH_PARAMS
 from league_client.exceptions import AccountCheckError
@@ -42,6 +40,7 @@ from league_client.rso.rank import get_tier_division_wins_losses
 from league_client.rso.skin import get_skins
 from league_client.rso.userinfo import get_userinfo
 from league_client.rso.utils import decode_token
+from league_client.types import ProxyT
 
 
 def get_internal_region_by_tag(region: str) -> str:
@@ -58,7 +57,7 @@ def get_account_data(
     username: str,
     password: str,
     captcha_solver: Callable[[str, str], str],
-    proxy: Optional[ProxyTypes] = None,
+    proxy: Optional[ProxyT] = None,
 ):
     """
     Get account data using RSO.
@@ -404,7 +403,7 @@ def check_password(
     username: str,
     password: str,
     captcha_solver: Callable[[str, str], str],
-    proxy: Optional[ProxyTypes] = None,
+    proxy: Optional[ProxyT] = None,
 ) -> bool:
     try:
         login_using_credentials(
@@ -420,7 +419,7 @@ def change_password(
     password: str,
     captcha_solver: Callable[[str, str], str],
     new_password: str,
-    proxy: Optional[ProxyTypes] = None,
+    proxy: Optional[ProxyT] = None,
 ) -> bool:
     return change_password_using_credentials(
         username, password, new_password, captcha_solver, proxy

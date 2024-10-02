@@ -5,7 +5,6 @@ from urllib.parse import parse_qs
 from urllib.parse import urlparse
 
 import httpx
-from httpx._types import ProxyTypes
 
 from league_client.constants import HEADERS
 from league_client.constants import RIOT_CLIENT_AUTH_PARAMS
@@ -15,6 +14,7 @@ from league_client.exceptions import AuthMultifactorError
 from league_client.exceptions import InvalidSessionError
 from league_client.exceptions import RateLimitedError
 from league_client.rso.utils import decode_token
+from league_client.types import ProxyT
 
 
 def process_redirect_url(redirect_url: str):
@@ -49,7 +49,7 @@ def process_access_token(access_token: str) -> tuple[str, str, int]:
     return data["sub"], data["dat"]["r"], data["dat"]["u"]
 
 
-def get_pas_token(access_token: str, proxy: Optional[ProxyTypes] = None):
+def get_pas_token(access_token: str, proxy: Optional[ProxyT] = None):
     h = HEADERS.copy()
     h["Authorization"] = f"Bearer {access_token}"
     res = httpx.get(
@@ -62,7 +62,7 @@ def get_pas_token(access_token: str, proxy: Optional[ProxyTypes] = None):
 
 
 def get_entitlements_token(
-    access_token: str, proxy: Optional[ProxyTypes] = None
+    access_token: str, proxy: Optional[ProxyT] = None
 ) -> str:
     h = HEADERS.copy()
     h["Authorization"] = f"Bearer {access_token}"
@@ -82,7 +82,7 @@ def get_login_queue_token(
     entitlements_token: str,
     region: str,
     player_platform_url: str,
-    proxy: Optional[ProxyTypes] = None,
+    proxy: Optional[ProxyT] = None,
 ):
     h = HEADERS.copy()
     h["Authorization"] = f"Bearer {access_token}"
@@ -106,7 +106,7 @@ def get_ledge_token(
     puuid: str,
     region: str,
     player_platform_url: str,
-    proxy: Optional[ProxyTypes] = None,
+    proxy: Optional[ProxyT] = None,
 ):
     h = HEADERS.copy()
     h["Authorization"] = f"Bearer {login_queue_token}"
@@ -130,7 +130,7 @@ def get_summoner_token(
     puuid: str,
     region: str,
     ledge_url: str,
-    proxy: Optional[ProxyTypes] = None,
+    proxy: Optional[ProxyT] = None,
 ):
     h = HEADERS.copy()
     h["Authorization"] = f"Bearer {ledge_token}"
@@ -148,7 +148,7 @@ def login_using_ssid(
     ssid: str,
     clid: str,
     auth_params: dict[str, str] = RIOT_CLIENT_AUTH_PARAMS,
-    proxy: Optional[ProxyTypes] = None,
+    proxy: Optional[ProxyT] = None,
 ) -> tuple[str, str, str, str, str, str, str, str, str]:
     with httpx.Client(verify=SSL_CONTEXT, proxy=proxy) as client:
         if ssid:
@@ -275,7 +275,7 @@ def login_using_credentials(
     password: str,
     captcha_solver: Callable[[str, str], str],
     params: dict[str, str] = RIOT_CLIENT_AUTH_PARAMS,
-    proxy: Optional[ProxyTypes] = None,
+    proxy: Optional[ProxyT] = None,
 ) -> tuple[str, str, str, str, str, str, str, str, str]:
     with httpx.Client(verify=SSL_CONTEXT, proxy=proxy) as client:
         authorize(

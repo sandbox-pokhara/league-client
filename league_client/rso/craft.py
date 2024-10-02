@@ -5,7 +5,6 @@ from typing import Any
 from typing import Optional
 
 import httpx
-from httpx._types import ProxyTypes
 
 from league_client.constants import HEADERS
 from league_client.rso.constants import LootNameTypes
@@ -16,6 +15,7 @@ from league_client.rso.loot import get_key_fragment_count
 from league_client.rso.loot import get_loot_data
 from league_client.rso.loot import get_masterwork_chest_count
 from league_client.rso.loot import get_mythic_essence_count
+from league_client.types import ProxyT
 
 
 def craft(
@@ -25,7 +25,7 @@ def craft(
     recipe_name: str,
     loot_names: list[LootNameTypes],
     repeat: int = 1,
-    proxy: Optional[ProxyTypes] = None,
+    proxy: Optional[ProxyT] = None,
 ):
     """Craft or open a chest item"""
     h = HEADERS.copy()
@@ -55,7 +55,7 @@ def craft_key_from_key_fragments(
     ledge_url: str,
     puuid: str,
     repeat: int = 1,
-    proxy: Optional[ProxyTypes] = None,
+    proxy: Optional[ProxyT] = None,
 ):
     return craft(
         ledge_token,
@@ -73,7 +73,7 @@ def craft_generic_chests(
     ledge_url: str,
     puuid: str,
     repeat: int = 1,
-    proxy: Optional[ProxyTypes] = None,
+    proxy: Optional[ProxyT] = None,
 ):
     return craft(
         ledge_token,
@@ -91,7 +91,7 @@ def craft_champion_mastery_chest(
     ledge_url: str,
     puuid: str,
     repeat: int = 1,
-    proxy: Optional[ProxyTypes] = None,
+    proxy: Optional[ProxyT] = None,
 ):
     return craft(
         ledge_token,
@@ -109,7 +109,7 @@ def craft_keys_and_generic_chests(
     ledge_url: str,
     puuid: str,
     retry_limit: int = 10,
-    proxy: Optional[ProxyTypes] = None,
+    proxy: Optional[ProxyT] = None,
 ):
     for _ in range(retry_limit):
 
@@ -141,7 +141,7 @@ def craft_keys_and_masterwork_chests(
     ledge_url: str,
     puuid: str,
     retry_limit: int = 10,
-    proxy: Optional[ProxyTypes] = None,
+    proxy: Optional[ProxyT] = None,
 ):
     for _ in range(retry_limit):
         loot_data = get_loot_data(ledge_token, ledge_url, puuid, proxy)
@@ -174,7 +174,7 @@ def craft_chest_by_loot_name(
     loot_name: LootNameTypes,
     requires_key: bool = False,
     repeat: int = 1,
-    proxy: Optional[ProxyTypes] = None,
+    proxy: Optional[ProxyT] = None,
 ):
     """Craft or open an chest item by loot id"""
     loot_names = [loot_name]
@@ -198,7 +198,7 @@ def craft_chest_loots(
     loot_data: dict[str, Any],
     requires_key: bool = True,
     delay: int = 1,
-    proxy: Optional[ProxyTypes] = None,
+    proxy: Optional[ProxyT] = None,
 ):
     key_count = 0
     if requires_key:
@@ -228,7 +228,7 @@ def craft_champion_capsules(
     ledge_url: str,
     puuid: str,
     delay: int = 1,
-    proxy: Optional[ProxyTypes] = None,
+    proxy: Optional[ProxyT] = None,
 ):
     loot_data = get_loot_data(ledge_token, ledge_url, puuid, proxy)
     champion_capsules = [
@@ -253,7 +253,7 @@ def craft_mythic_essence_into_skin_shard(
     ledge_token: str,
     ledge_url: str,
     puuid: str,
-    proxy: Optional[ProxyTypes] = None,
+    proxy: Optional[ProxyT] = None,
 ):
     loot_data = get_loot_data(ledge_token, ledge_url, puuid, proxy)
     count: int = get_mythic_essence_count(loot_data)

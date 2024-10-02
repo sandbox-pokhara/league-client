@@ -2,13 +2,13 @@ from typing import Any
 from typing import Optional
 
 import httpx
-from httpx._types import ProxyTypes
 
 from league_client.constants import HEADERS
+from league_client.types import ProxyT
 
 
 def get_userinfo(
-    access_token: str, proxy: Optional[ProxyTypes] = None
+    access_token: str, proxy: Optional[ProxyT] = None
 ) -> str | dict[str, Any]:
     h = HEADERS.copy()
     h["Authorization"] = f"Bearer {access_token}"

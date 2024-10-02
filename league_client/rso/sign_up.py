@@ -2,10 +2,10 @@ from typing import Callable
 from typing import Optional
 
 import httpx
-from httpx._types import ProxyTypes
 
 from league_client.constants import HEADERS
 from league_client.constants import SSL_CONTEXT
+from league_client.types import ProxyT
 
 
 def sign_up(
@@ -14,7 +14,7 @@ def sign_up(
     email: str,
     dob: str,
     captcha_solver: Callable[[str, str], str],
-    proxy: Optional[ProxyTypes] = None,
+    proxy: Optional[ProxyT] = None,
 ):
     with httpx.Client(
         verify=SSL_CONTEXT,

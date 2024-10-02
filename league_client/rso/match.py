@@ -2,16 +2,16 @@ from typing import Any
 from typing import Optional
 
 import httpx
-from httpx._types import ProxyTypes
 
 from league_client.constants import HEADERS
+from league_client.types import ProxyT
 
 
 def get_match_data(
     access_token: str,
     puuid: str,
     player_platform_edge_url: str,
-    proxy: Optional[ProxyTypes] = None,
+    proxy: Optional[ProxyT] = None,
     count: int = 30,
 ):
     h = HEADERS.copy()

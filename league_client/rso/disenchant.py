@@ -1,16 +1,15 @@
 from typing import Optional
 
-from httpx._types import ProxyTypes
-
 from league_client.rso.craft import craft
 from league_client.rso.loot import get_loot_data
+from league_client.types import ProxyT
 
 
 def disenchant_champion_shards(
     ledge_token: str,
     ledge_url: str,
     puuid: str,
-    proxy: Optional[ProxyTypes] = None,
+    proxy: Optional[ProxyT] = None,
 ):
     loot_data = get_loot_data(ledge_token, ledge_url, puuid, proxy)
     champion_shards = [
@@ -35,7 +34,7 @@ def disenchant_eternals(
     ledge_token: str,
     ledge_url: str,
     puuid: str,
-    proxy: Optional[ProxyTypes] = None,
+    proxy: Optional[ProxyT] = None,
 ):
     loot_data = get_loot_data(ledge_token, ledge_url, puuid, proxy)
     eternals = [
@@ -59,7 +58,7 @@ def disenchant_ward_skins(
     ledge_token: str,
     ledge_url: str,
     puuid: str,
-    proxy: Optional[ProxyTypes] = None,
+    proxy: Optional[ProxyT] = None,
 ):
     loot_data = get_loot_data(ledge_token, ledge_url, puuid, proxy)
     ward_skins = [

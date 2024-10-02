@@ -1,9 +1,9 @@
 from typing import Optional
 
 import httpx
-from httpx._types import ProxyTypes
 
 from league_client.constants import HEADERS
+from league_client.types import ProxyT
 
 
 def get_missions(
@@ -11,7 +11,7 @@ def get_missions(
     ledge_url: str,
     inventory_tokens: list[str],  # list of `EVENT_PASS, CHAMPION_SKIN` tokens
     userinfo_token: str,
-    proxy: Optional[ProxyTypes] = None,
+    proxy: Optional[ProxyT] = None,
 ):
     h = HEADERS.copy()
     h["Authorization"] = f"Bearer {ledge_token}"
