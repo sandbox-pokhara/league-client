@@ -38,6 +38,10 @@ class ChatHostNotFound(RSOError):
     pass
 
 
+class SignUpError(RSOError):
+    pass
+
+
 class LCUConnectionError(LCUError):
     pass
 

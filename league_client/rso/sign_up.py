@@ -5,7 +5,9 @@ import httpx
 
 from league_client.constants import HEADERS
 from league_client.constants import SSL_CONTEXT
+from league_client.exceptions import SignUpError
 from league_client.types import ProxyT
+from league_client.utils import retry_on_read_timeout
 
 
 def sign_up(
@@ -22,14 +24,16 @@ def sign_up(
         headers={"User-Agent": HEADERS["User-Agent"]},
     ) as client:
         # step 1: setup
-        res = client.get(
+        res = retry_on_read_timeout(client.get)(
             r"https://xsso.leagueoflegends.com/login?uri=https://signup.leagueoflegends.com&prompt=signup&show_region=true&locale=en_US",
             follow_redirects=True,
         )
         res.raise_for_status()
 
         # step 2: get hcaptcha details (sitekey and rqdata)
-        res = client.get("https://authenticate.riotgames.com/api/v1/login")
+        res = retry_on_read_timeout(client.get)(
+            "https://authenticate.riotgames.com/api/v1/login"
+        )
         res.raise_for_status()
         data = res.json()
         site_key = data["captcha"]["hcaptcha"]["key"]
@@ -50,7 +54,7 @@ def sign_up(
             "birth_date": dob,
             "captcha": f"hcaptcha {token}",
         }
-        res = client.put(
+        res = retry_on_read_timeout(client.put)(
             "https://authenticate.riotgames.com/api/v1/login", json=data
         )
         res.raise_for_status()
@@ -58,7 +62,9 @@ def sign_up(
 
         # step 5(optional): account is already created at step 4
         # this step is for parsing ssid and clid
-        res = client.get(
+        if "success" not in data:
+            raise SignUpError(res)
+        res = retry_on_read_timeout(client.get)(
             data["success"]["redirect_url"],
             headers=HEADERS,
             follow_redirects=True,
