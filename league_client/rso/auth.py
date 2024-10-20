@@ -287,7 +287,7 @@ def login_using_credentials(
         )
         res = client.post(
             "https://auth.riotgames.com/api/v1/authorization",
-            params=params,
+            json=params,
             headers=HEADERS,
         )
         # NOTE: IP might be banned at this point
