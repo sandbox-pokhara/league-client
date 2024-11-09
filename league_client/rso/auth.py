@@ -156,7 +156,7 @@ def login_using_ssid(
             client.cookies.set("clid", clid, domain="auth.riotgames.com")
         res = client.post(
             "https://auth.riotgames.com/api/v1/authorization",
-            params=auth_params,
+            json=auth_params,
             headers=HEADERS,
         )
         res.raise_for_status()
