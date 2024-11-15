@@ -19,6 +19,7 @@ PLAYER_PLATFORM_EDGE_URL = {
     "PH2": "https://apse1-red.pp.sgp.pvp.net",
     "VN2": "https://apse1-red.pp.sgp.pvp.net",
     "TH2": "https://apse1-red.pp.sgp.pvp.net",
+    "ME1": "https://euc1-red.pp.sgp.pvp.net",
 }
 
 # KR, PBE, TW2 is not supported yet
@@ -40,6 +41,7 @@ LEAGUE_EDGE_URL = {
     "PH2": "https://ph2-red.lol.sgp.pvp.net",
     "VN2": "https://vn2-red.lol.sgp.pvp.net",
     "TH2": "https://th2-red.lol.sgp.pvp.net",
+    "ME1": "https://me1-red.lol.sgp.pvp.net",
 }
 
 # KR, PBE, TW2 is not supported yet
@@ -61,6 +63,7 @@ DISCOVEROUS_SERVICE_LOCATION = {
     "PH2": "lolriot.aws-euc1-prod.ph2",
     "VN2": "lolriot.aws-euc1-prod.vn2",
     "TH2": "lolriot.aws-euc1-prod.th2",
+    "ME1": "lolriot.aws-euc1-prod.me1",
 }
 
 
