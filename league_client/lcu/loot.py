@@ -85,7 +85,7 @@ def get_generic_chest_count(connection: LeagueConnection) -> int:
 
 
 def get_champion_mastery_chest_count(connection: LeagueConnection) -> int:
-    return get_loot_count(connection, "CHEST_champion_mastery")
+    return get_loot_count(connection, "CHEST_687")
 
 
 def get_masterwork_chest_count(connection: LeagueConnection) -> int:

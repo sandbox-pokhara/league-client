@@ -97,7 +97,7 @@ def craft_champion_mastery_chest(
         ledge_token,
         ledge_url,
         puuid,
-        "CHEST_champion_mastery_OPEN",
+        "CHEST_687_OPEN",
         [LootNameTypes.champion_mastery_chest, LootNameTypes.key],
         repeat,
         proxy,
@@ -235,7 +235,8 @@ def craft_champion_capsules(
         item
         for item in loot_data["playerLoot"]
         if re.fullmatch(
-            "CHEST_((?!(generic|224|champion_mastery)).)*", item["lootName"]
+            "CHEST_((?!(generic|224|champion_mastery|687)).)*",
+            item["lootName"],
         )
     ]
     craft_chest_loots(

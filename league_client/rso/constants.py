@@ -80,7 +80,7 @@ class LootNameTypes(str, Enum):
     key_fragment = "MATERIAL_key_fragment"
     key = "MATERIAL_key"
     generic_chest = "CHEST_generic"
-    champion_mastery_chest = "CHEST_champion_mastery"
+    champion_mastery_chest = "CHEST_687"
     masterwork_chest = "CHEST_224"
     blue_essence = "CURRENCY_champion"
     orange_essence = "CURRENCY_cosmetic"

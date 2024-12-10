@@ -105,8 +105,8 @@ def craft_champion_mastery_chest(
 ):
     craft(
         connection,
-        "CHEST_champion_mastery_OPEN",
-        ["CHEST_champion_mastery", "MATERIAL_key"],
+        "CHEST_687_OPEN",
+        ["CHEST_687", "MATERIAL_key"],
         repeat,
     )
 
@@ -184,7 +184,7 @@ def craft_champion_capsules(connection: LeagueConnection):
         m
         for m in data
         if re.fullmatch(
-            "CHEST_((?!(generic|224|champion_mastery)).)*", m["lootId"]
+            "CHEST_((?!(generic|224|champion_mastery|687)).)*", m["lootId"]
         )
     ]
     if data == []:
