@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "league-client"
-version = "2.1.8"
+version = "2.1.9"
 dependencies = ["httpx", "tenacity"]
 requires-python = ">=3"
 authors = [{ name = "Pradish Bijukchhe", email = "pradishbijukchhe@gmail.com" }]
