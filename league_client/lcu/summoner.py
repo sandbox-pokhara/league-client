@@ -1,8 +1,8 @@
 from league_client.connection import LeagueConnection
 
 
-def get_summoner_by_name(connection: LeagueConnection, name: str):
-    res = connection.get(f"/lol-summoner/v1/summoners?name={name}")
+def get_summoners_by_name(connection: LeagueConnection, names: list[str]):
+    res = connection.post("/lol-summoner/v2/summoners/names", json=names)
     res.raise_for_status()
     return res.json()
 
