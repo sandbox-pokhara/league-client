@@ -1,6 +1,7 @@
 import os
 import time
 import typing
+from pathlib import Path
 from urllib.parse import urljoin
 
 from httpx import Client
@@ -10,13 +11,15 @@ from httpx._types import URLTypes
 
 from league_client.exceptions import LCUConnectionError
 
-LCU_LOCKFILE = os.path.expanduser(
+RCU_LOCKFILE = os.path.expanduser(
     "~\\AppData\\Local\\Riot Games\\Riot Client\\Config\\lockfile"
 )
 
 
 class LeagueConnection(Client):
-    def __init__(self, lockfile: str = LCU_LOCKFILE, timeout: float = 30):
+    def __init__(
+        self, lockfile: str | Path = RCU_LOCKFILE, timeout: float = 30
+    ):
         super().__init__(verify=False)
         start = time.time()
         while True:
